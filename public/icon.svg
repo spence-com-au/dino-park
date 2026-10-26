@@ -1,6 +1,40 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Bruno the Brontosaurus, standing on the grass by an egg. -->
   <rect width="512" height="512" rx="96" fill="#9fd8f5"/>
-  <ellipse cx="256" cy="430" rx="210" ry="60" fill="#8fd16a"/>
-  <path d="M120 330c0-70 60-120 140-120s120 40 150 20c20-12 40-40 40-40s10 50-30 80c-20 15-30 40-30 60v40h-50v-40h-110v40h-50v-40c-40 0-60 30-90 30 0 0 30-30 30-70z" fill="#6cc24a"/>
-  <circle cx="400" cy="200" r="10" fill="#222"/>
+  <circle cx="116" cy="118" r="40" fill="#ffe27a"/>
+  <ellipse cx="256" cy="442" rx="230" ry="58" fill="#8fd16a"/>
+  <!-- Far legs, a shade darker so they sit behind the body. -->
+  <g fill="#4fa336">
+    <rect x="128" y="320" width="42" height="104" rx="18"/>
+    <rect x="262" y="320" width="42" height="104" rx="18"/>
+  </g>
+  <g fill="#6cc24a">
+    <!-- Tail, sweeping down and out to the left. -->
+    <path d="M140 290 C100 300 70 340 26 360 C60 372 110 366 150 360 Z"/>
+    <!-- Neck, curving up to the head. -->
+    <path d="M276 268 C318 236 330 190 340 150 L400 150 C392 212 372 270 336 336 Z"/>
+    <ellipse cx="226" cy="318" rx="118" ry="76"/>
+    <ellipse cx="384" cy="138" rx="62" ry="44"/>
+    <!-- Near legs. -->
+    <rect x="148" y="330" width="46" height="100" rx="20"/>
+    <rect x="282" y="330" width="46" height="100" rx="20"/>
+  </g>
+  <!-- Spots along the back. -->
+  <g fill="#4fa336">
+    <circle cx="186" cy="268" r="14"/>
+    <circle cx="232" cy="262" r="16"/>
+    <circle cx="276" cy="270" r="12"/>
+  </g>
+  <!-- Eye, with a catch-light, a smile and a rosy cheek. -->
+  <circle cx="396" cy="124" r="13" fill="#222"/>
+  <circle cx="401" cy="119" r="4.5" fill="#fff"/>
+  <path d="M404 156 Q422 162 436 148" fill="none" stroke="#222" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="370" cy="150" r="10" fill="#ff9fb4"/>
+  <!-- A speckled egg on the grass. -->
+  <ellipse cx="410" cy="388" rx="34" ry="44" fill="#fff6e0"/>
+  <g fill="#f2b8a0">
+    <circle cx="398" cy="372" r="7"/>
+    <circle cx="422" cy="388" r="6"/>
+    <circle cx="404" cy="406" r="5"/>
+  </g>
 </svg>

@@ -25,7 +25,7 @@
     <circle cx="232" cy="262" r="16"/>
     <circle cx="276" cy="270" r="12"/>
   </g>
-  <!-- Eye, with a catch-light, and a smile. -->
+  <!-- Eye, with a catch-light, a smile and a rosy cheek. -->
   <circle cx="396" cy="124" r="13" fill="#222"/>
   <circle cx="401" cy="119" r="4.5" fill="#fff"/>
   <path d="M404 156 Q422 162 436 148" fill="none" stroke="#222" stroke-width="7" stroke-linecap="round"/>

@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- Bronty the Brontosaurus, the park's first dinosaur, standing on the grass by an egg. -->
+  <!-- Bruno the Brontosaurus, standing on the grass by an egg. -->
   <rect width="512" height="512" rx="96" fill="#9fd8f5"/>
-  <circle cx="96" cy="100" r="44" fill="#ffe27a"/>
+  <circle cx="116" cy="118" r="40" fill="#ffe27a"/>
   <ellipse cx="256" cy="442" rx="230" ry="58" fill="#8fd16a"/>
   <!-- Far legs, a shade darker so they sit behind the body. -->
   <g fill="#4fa336">
@@ -22,7 +22,7 @@
   <!-- Spots along the back. -->
   <g fill="#4fa336">
     <circle cx="186" cy="268" r="14"/>
-    <circle cx="232" cy="256" r="16"/>
+    <circle cx="232" cy="262" r="16"/>
     <circle cx="276" cy="270" r="12"/>
   </g>
   <!-- Eye, with a catch-light, and a smile. -->
@@ -31,10 +31,10 @@
   <path d="M404 156 Q422 162 436 148" fill="none" stroke="#222" stroke-width="7" stroke-linecap="round"/>
   <circle cx="370" cy="150" r="10" fill="#ff9fb4"/>
   <!-- A speckled egg on the grass. -->
-  <ellipse cx="424" cy="400" rx="36" ry="46" fill="#fff6e0"/>
+  <ellipse cx="410" cy="388" rx="34" ry="44" fill="#fff6e0"/>
   <g fill="#f2b8a0">
-    <circle cx="412" cy="384" r="7"/>
-    <circle cx="436" cy="400" r="6"/>
-    <circle cx="418" cy="418" r="5"/>
+    <circle cx="398" cy="372" r="7"/>
+    <circle cx="422" cy="388" r="6"/>
+    <circle cx="404" cy="406" r="5"/>
   </g>
 </svg>

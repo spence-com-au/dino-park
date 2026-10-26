@@ -1117,6 +1117,26 @@ test('has a web app manifest for installing, which knows the game is itself', as
   });
 });
 
+test('serves the home-screen icons that the build renders from the SVG', async ({ page, request }) => {
+  await page.goto('./');
+  const manifestHref = await page.locator('link[rel="manifest"]').getAttribute('href');
+  const manifest = new URL(manifestHref ?? '', page.url());
+  const { icons } = (await (await request.get(manifest.href)).json()) as { icons: { src: string; sizes: string }[] };
+  const touchIcon = await page.locator('link[rel="apple-touch-icon"]').getAttribute('href');
+  const pngs = [
+    ...icons.filter(({ sizes }) => sizes !== 'any').map(({ src, sizes }) => ({ url: new URL(src, manifest), sizes })),
+    { url: new URL(touchIcon ?? '', page.url()), sizes: '180x180' },
+  ];
+  expect(pngs).toHaveLength(4);
+  for (const { url, sizes } of pngs) {
+    const response = await request.get(url.href);
+    expect(response.headers()['content-type'], url.pathname).toBe('image/png');
+    const png = await response.body();
+    // A PNG's width and height are the first two fields of its IHDR chunk, straight after the signature.
+    expect(`${png.readUInt32BE(16)}x${png.readUInt32BE(20)}`, url.pathname).toBe(sizes);
+  }
+});
+
 test('offers a grown-up to install the game when the browser allows it, then says where to find it', async ({
   page,
 }) => {

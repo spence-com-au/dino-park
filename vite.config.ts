@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import { defineConfig } from 'vitest/config';
 
+import { icons } from './scripts/icons.ts';
 import pkg from './package.json' with { type: 'json' };
 
 function gitSha(): string {
@@ -24,6 +25,7 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    icons(),
     VitePWA({
       // A new service worker waits and applies on the next launch, never mid-play.
       registerType: 'prompt',
@@ -42,7 +44,7 @@ export default defineConfig({
         orientation: 'landscape',
         background_color: '#bfe9a8',
         theme_color: '#3f9b4f',
-        // PNGs from scripts/render-icons.ts, since Android's launchers want them, alongside the SVG they come from.
+        // PNGs rendered from the SVG by scripts/icons.ts, since Android's launchers want them.
         icons: [
           { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },

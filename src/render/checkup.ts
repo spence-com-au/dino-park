@@ -6,8 +6,8 @@ import { type CloseUpView, canvasPoint, formatMark, modelPoints, pointerAt, scre
 import { iconMaterial } from './icons';
 
 /** How big the stethoscope and the shiny spot are. */
-const STETHOSCOPE_SIZE = 1.8;
-const SPOT_SIZE = 1.5;
+const STETHOSCOPE_SIZE = 1.5;
+const SPOT_SIZE = 2.1;
 /** How close on screen, in CSS pixels, a press must be to pick up the stethoscope, or to tap the spot. */
 const GRAB_PX = 90;
 const SPOT_PX = 90;
@@ -42,7 +42,7 @@ function sideAt(object: THREE.Object3D, camera: THREE.Camera, along: number, tar
   return target
     .copy(middle)
     .addScaledVector(toCamera, side)
-    .setY(middle.y + 0.2 * (top - middle.y));
+    .setY(middle.y + 0.45 * (top - middle.y));
 }
 
 /**

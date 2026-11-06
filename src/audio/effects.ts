@@ -194,3 +194,56 @@ export function startEngine(mixer: Mixer): Engine {
     },
   };
 }
+
+/** A heartbeat heard through the stethoscope in a check-up: two soft, low thumps, "lub-dub". */
+export function playHeartbeat(mixer: Mixer): void {
+  const { context } = mixer;
+  const at = context.currentTime;
+  for (const [beat, frequency, volume] of [
+    [0, 70, 0.45],
+    [0.18, 58, 0.35],
+  ] as const) {
+    const envelope = context.createGain();
+    envelope.gain.setValueAtTime(0.0001, at + beat);
+    envelope.gain.exponentialRampToValueAtTime(volume, at + beat + 0.015);
+    envelope.gain.exponentialRampToValueAtTime(0.0001, at + beat + 0.16);
+    envelope.connect(mixer.buses.effects);
+    const oscillator = context.createOscillator();
+    oscillator.frequency.setValueAtTime(frequency * 1.6, at + beat);
+    oscillator.frequency.exponentialRampToValueAtTime(frequency, at + beat + 0.08);
+    oscillator.connect(envelope);
+    oscillator.start(at + beat);
+    oscillator.stop(at + beat + 0.2);
+  }
+}
+
+/** A tummy heard through the stethoscope in a check-up: a wobbly, gurgling rumble that rises at the end. */
+export function playRumble(mixer: Mixer): void {
+  const { context } = mixer;
+  const at = context.currentTime;
+  const envelope = context.createGain();
+  envelope.gain.setValueAtTime(0.0001, at);
+  envelope.gain.exponentialRampToValueAtTime(0.3, at + 0.06);
+  envelope.gain.setValueAtTime(0.3, at + 0.45);
+  envelope.gain.exponentialRampToValueAtTime(0.0001, at + 0.7);
+  const tone = context.createBiquadFilter();
+  tone.type = 'lowpass';
+  tone.frequency.value = 500;
+  tone.connect(envelope).connect(mixer.buses.effects);
+  const oscillator = context.createOscillator();
+  oscillator.type = 'sawtooth';
+  oscillator.frequency.setValueAtTime(90, at);
+  oscillator.frequency.linearRampToValueAtTime(70, at + 0.4);
+  oscillator.frequency.exponentialRampToValueAtTime(220, at + 0.65);
+  // A slow wobble makes it gurgle rather than buzz.
+  const wobble = context.createOscillator();
+  wobble.frequency.value = 9;
+  const depth = context.createGain();
+  depth.gain.value = 18;
+  wobble.connect(depth).connect(oscillator.frequency);
+  oscillator.connect(tone);
+  for (const source of [oscillator, wobble]) {
+    source.start(at);
+    source.stop(at + 0.75);
+  }
+}

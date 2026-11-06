@@ -46,8 +46,17 @@ describe('close-ups', () => {
     });
   });
 
+  it('listens with a stethoscope after the vet', () => {
+    expect(closeUpAfter({ type: 'deliver', species: 'trex', kind: 'poorly' }, played)).toEqual({
+      kind: 'checkup',
+      species: 'trex',
+      item: 'vet',
+      done: 0,
+      idle: 0,
+    });
+  });
+
   it('opens for nothing else, nor for the tour', () => {
-    expect(closeUpAfter({ type: 'deliver', species: 'trex', kind: 'poorly' }, played)).toBeNull();
     expect(closeUpAfter({ type: 'load', cargo: 'meat' }, played)).toBeNull();
     expect(closeUpAfter({ type: 'hatch', species: 'velociraptor' }, played)).toBeNull();
     // The tour ends with the first need met, and goes on to the egg.

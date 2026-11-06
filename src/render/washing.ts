@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 import { CLOSE_UP_GOALS } from '../core/closeUp';
 import { scrub } from '../core/wash';
-import { type CloseUpView, canvasPoint, formatMark, modelPoints, pointerAt, screenGap } from './closeUpView';
+import { type CloseUpView, canvasPoint, formatMark, modelPoints, pointerAt, screenGap, sideOf } from './closeUpView';
 import { iconMaterial } from './icons';
 
 /** How big a splat of mud is, and how close on screen, in CSS pixels, a finger must be to rub it. */
@@ -99,31 +99,22 @@ export function createWashing(scene: THREE.Scene, camera: THREE.Camera, canvas: 
       }
       // Splats spread evenly along its body, nose to tail: on each stretch, on the side the camera sees, a little
       // above the middle, so they sit on its body rather than on spikes and plates.
-      const { points, reach } = modelPoints(first.object);
-      const front = Math.max(...reach);
-      const back = Math.min(...reach);
+      const model = modelPoints(first.object);
+      const front = Math.max(...model.reach);
+      const back = Math.min(...model.reach);
       const count = CLOSE_UP_GOALS.wash;
-      const toCamera = new THREE.Vector3();
       for (let i = 0; i < count; i++) {
         const from = back + (0.15 + (0.7 * i) / count) * (front - back);
         const to = back + (0.15 + (0.7 * (i + 1)) / count) * (front - back);
-        const stretch = points.filter((_, j) => (reach[j] ?? back) >= from && (reach[j] ?? back) < to);
-        if (stretch.length === 0) {
+        const point = sideOf(model, from, to, 0.35, camera, new THREE.Vector3());
+        if (!point) {
           continue;
         }
-        const middle = stretch.reduce((sum, point) => sum.add(point), new THREE.Vector3()).divideScalar(stretch.length);
-        const top = Math.max(...stretch.map((point) => point.y));
-        toCamera.set(camera.position.x - middle.x, 0, camera.position.z - middle.z).normalize();
-        // How far its side reaches out towards the camera.
-        const side = Math.max(...stretch.map((point) => point.clone().sub(middle).setY(0).dot(toCamera)));
         // Drawn over the dinosaur, so its plates and spikes never hide the mud.
         const sprite = new THREE.Sprite(mudMaterial);
         sprite.renderOrder = 1;
         sprite.scale.setScalar(MUD_SIZE);
-        sprite.position
-          .copy(middle)
-          .addScaledVector(toCamera, side)
-          .setY(middle.y + 0.35 * (top - middle.y));
+        sprite.position.copy(point);
         scene.add(sprite);
         splats.push({ sprite, mud: 1 });
       }

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 import { CLOSE_UP_GOALS } from '../core/closeUp';
 import { penGate } from '../core/park';
-import { type CloseUpView, canvasPoint, formatMark, modelPoints, pointerAt, screenGap } from './closeUpView';
+import { type CloseUpView, canvasPoint, formatMark, modelPoints, pointerAt, screenGap, sideOf } from './closeUpView';
 import { iconMaterial } from './icons';
 
 /** How big the stethoscope and the shiny spot are. */
@@ -23,27 +23,6 @@ const REST_FRACTION = 0.45;
 /** The gold star pops on, holds, then fades, this long in all, and this big at most. */
 const STAR_SECONDS = 2.2;
 const STAR_SIZE = 2.4;
-
-/** Where along a dinosaur's side the camera sees, `along` the way from its tail to its nose, a little above the middle. */
-function sideAt(object: THREE.Object3D, camera: THREE.Camera, along: number, target: THREE.Vector3): THREE.Vector3 {
-  const { points, reach } = modelPoints(object);
-  const front = Math.max(...reach);
-  const back = Math.min(...reach);
-  const width = 0.15 * (front - back);
-  const middleOf = back + along * (front - back);
-  const stretch = points.filter((_, i) => Math.abs((reach[i] ?? back) - middleOf) <= width / 2);
-  if (stretch.length === 0) {
-    return object.getWorldPosition(target);
-  }
-  const middle = stretch.reduce((sum, point) => sum.add(point), new THREE.Vector3()).divideScalar(stretch.length);
-  const top = Math.max(...stretch.map((point) => point.y));
-  const toCamera = new THREE.Vector3(camera.position.x - middle.x, 0, camera.position.z - middle.z).normalize();
-  const side = Math.max(...stretch.map((point) => point.clone().sub(middle).setY(0).dot(toCamera)));
-  return target
-    .copy(middle)
-    .addScaledVector(toCamera, side)
-    .setY(middle.y + 0.45 * (top - middle.y));
-}
 
 /**
  * A check-up at the vet (docs/design.md §3): one shiny spot at a time on the dinosaur, its chest, its tummy, then its
@@ -115,8 +94,15 @@ export function createCheckup(scene: THREE.Scene, camera: THREE.Camera, canvas: 
       if (!first) {
         return;
       }
+      // Each spot is a little above the middle of its stretch of the dinosaur, on the side the camera sees.
+      const model = modelPoints(first.object);
+      const front = Math.max(...model.reach);
+      const back = Math.min(...model.reach);
       for (const along of SPOTS.slice(0, CLOSE_UP_GOALS.checkup)) {
-        spots.push(sideAt(first.object, camera, along, new THREE.Vector3()));
+        const middle = back + along * (front - back);
+        const width = 0.15 * (front - back);
+        const point = sideOf(model, middle - width / 2, middle + width / 2, 0.45, camera, new THREE.Vector3());
+        spots.push(point ?? first.object.getWorldPosition(new THREE.Vector3()));
       }
       const { x, z } = penGate(pen);
       rest.copy(spots[0] ?? new THREE.Vector3()).lerp(new THREE.Vector3(x, 3, z), REST_FRACTION);

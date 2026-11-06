@@ -174,6 +174,8 @@ describe('Ranger Rosie', () => {
       expect(lines.get(said(rosieOnCard({ station }, played, 0))[0] ?? '')).toBeTruthy();
     }
     expect(said(rosieOnCard({ nest: true }, played, 0))).toEqual(['rosie.about.nest']);
+    expect(said(rosieOnCard({ dig: true }, played, 0))).toEqual(['rosie.about.dig']);
+    expect(lines.get('rosie.about.dig')).toBe("This is the dig site. Let's dig for fossils!");
     expect(said(rosieOnCard({ nest: true }, { ...played, needsMet: NEEDS_PER_EGG }, 0))).toEqual(['rosie.egg.ready']);
     expect(said(rosieOnCard({ rosie: true }, played, 4))).toEqual(['rosie.about.rosie', 'rosie.fact.rosie.1']);
     expect(said(rosieOnCard({ dinosaur: 'trex' }, played, 0))[0]).toBe('rosie.about.trex');

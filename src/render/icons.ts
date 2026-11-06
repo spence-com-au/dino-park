@@ -6,7 +6,7 @@ import { type Diet, SPECIES, type SpeciesId } from '../core/species';
 
 /**
  * The pictures that stand in for words: what a dinosaur wants, what the jeep is carrying, a pat's hearts, and a
- * check-up's stethoscope, the shiny spots it listens at and the gold star after.
+ * check-up's stethoscope, the shiny spots it listens at and the gold star after, and the fossil dig's bone.
  */
 export type Icon =
   | 'leaf'
@@ -20,7 +20,8 @@ export type Icon =
   | 'heart'
   | 'stethoscope'
   | 'sparkle'
-  | 'star';
+  | 'star'
+  | 'bone';
 
 const FOOD_ICONS: Readonly<Record<Diet, Icon>> = { plants: 'leaf', meat: 'meat', fish: 'fish' };
 
@@ -221,6 +222,25 @@ function draw(ctx: CanvasRenderingContext2D, icon: Icon): void {
       ctx.lineJoin = 'round';
       ctx.stroke();
       circle(c - 8, c - 6, 5, '#fff0b8');
+      break;
+    case 'bone':
+      // A cartoon bone: a shaft with two knobbly ends, on the slant.
+      ctx.save();
+      ctx.translate(c, c);
+      ctx.rotate(-Math.PI / 4);
+      ctx.fillStyle = '#f3e6c4';
+      ctx.fillRect(-24, -8, 48, 16);
+      for (const x of [-26, 26]) {
+        circle(x, -9, 11, '#f3e6c4');
+        circle(x, 9, 11, '#f3e6c4');
+      }
+      ctx.strokeStyle = '#b89a62';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(-18, 9);
+      ctx.lineTo(18, 9);
+      ctx.stroke();
+      ctx.restore();
       break;
   }
 }

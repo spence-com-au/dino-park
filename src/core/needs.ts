@@ -77,8 +77,9 @@ export type CareEvent =
   /** `species` is null once everything has hatched; later eggs will hatch babies (docs/design.md §5). */
   | { readonly type: 'hatch'; readonly species: SpeciesId | null };
 
-/** Somewhere the jeep can be visiting: a station, a pen's gate, or the egg nest. */
-export type Visit = { readonly station: Station } | { readonly pen: Pen } | { readonly nest: true };
+/** Somewhere the jeep can be visiting: a station, a pen's gate, the egg nest or the fossil dig. */
+export type Visit =
+  { readonly station: Station } | { readonly pen: Pen } | { readonly nest: true } | { readonly dig: true };
 
 const FOOD: Readonly<Record<Diet, StationKind>> = { plants: 'hay', meat: 'meat', fish: 'fish' };
 
@@ -215,7 +216,7 @@ export function stepNeeds(care: Care, park: Park, jeep: JeepAt, seconds: number)
 }
 
 /**
- * The station, pen gate or nest nearest `position`, if one is within reach. They compete, so a jeep stopped at a
+ * The station, pen gate, nest or dig nearest `position`, if one is within reach. They compete, so a jeep stopped at a
  * pen next to a station delivers there rather than loading from the station.
  */
 export function visitedPlace(park: Park, position: Point): Visit | undefined {
@@ -235,6 +236,7 @@ export function visitedPlace(park: Park, position: Point): Visit | undefined {
     consider(penGate(pen), { pen });
   }
   consider(park.nest, { nest: true });
+  consider(park.dig, { dig: true });
   return best;
 }
 

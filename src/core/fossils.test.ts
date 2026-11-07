@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { FOSSILS, FOSSIL_IDS, type FossilId, drawFossil, returnFossil, shuffleFossils } from './fossils';
+import { FOSSILS, FOSSIL_IDS, type FossilId, afterFinding, fossilUnderSand, shuffleFossils } from './fossils';
 
 /** A repeatable stand-in for `Math.random`. */
 function seeded(seed: number): () => number {
@@ -29,14 +29,12 @@ describe('fossils', () => {
     for (let seed = 1; seed < 50; seed++) {
       const random = seeded(seed);
       let deck = shuffleFossils(random);
-      let last = null;
-      const found = [];
+      const found: FossilId[] = [];
       for (let i = 0; i < FOSSIL_IDS.length * 5; i++) {
-        const next = drawFossil(deck, random, last);
-        expect(next.fossil).not.toBe(last);
-        found.push(next.fossil);
-        ({ deck } = next);
-        last = next.fossil;
+        const fossil = fossilUnderSand(deck);
+        expect(fossil).not.toBe(found.at(-1));
+        found.push(fossil);
+        deck = afterFinding(deck, random);
       }
       for (let round = 0; round < 5; round++) {
         const slice = found.slice(round * FOSSIL_IDS.length, (round + 1) * FOSSIL_IDS.length);
@@ -45,21 +43,11 @@ describe('fossils', () => {
     }
   });
 
-  it('keeps a fossil left under its sand for next time, so leaving early never uses one up', () => {
-    for (let seed = 1; seed < 50; seed++) {
-      const random = seeded(seed);
-      let deck = shuffleFossils(random);
-      let last: FossilId | null = null;
-      const found: FossilId[] = [];
-      // Arrive, find one, start on the next patch and leave before finding it; then arrive again, and so on.
-      while (found.length < FOSSIL_IDS.length) {
-        const first = drawFossil(deck, random, last);
-        found.push(first.fossil);
-        last = first.fossil;
-        const next = drawFossil(first.deck, random, last);
-        deck = returnFossil(next.deck, next.fossil);
-      }
-      expect(new Set(found).size).toBe(FOSSIL_IDS.length);
-    }
+  it('takes a fossil off the deck only once it is found, so leaving the dig early uses none up', () => {
+    const deck = shuffleFossils(seeded(7));
+    // However often the child arrives and leaves without finding it, the same fossil waits under the sand.
+    expect(fossilUnderSand(deck)).toBe(deck[0]);
+    expect(afterFinding(deck, seeded(7))).toEqual(deck.slice(1));
+    expect(fossilUnderSand([])).toBe(FOSSIL_IDS[0]);
   });
 });

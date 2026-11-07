@@ -46,27 +46,21 @@ export function shuffleFossils(random: () => number, ids: readonly FossilId[] = 
   return deck;
 }
 
-/**
- * The next fossil from `deck`, and the deck after it. A used-up deck is shuffled afresh, never starting with the fossil
- * just found, so the same one never comes twice in a row.
- */
-export function drawFossil(
-  deck: readonly FossilId[],
-  random: () => number,
-  last: FossilId | null = null,
-): { fossil: FossilId; deck: FossilId[] } {
-  let next = deck.length > 0 ? [...deck] : shuffleFossils(random);
-  if (deck.length === 0 && next[0] === last && next.length > 1) {
-    next = [...next.slice(1), next[0] as FossilId];
-  }
-  const [fossil = FOSSIL_IDS[0] as FossilId, ...rest] = next;
-  return { fossil, deck: rest };
+/** The fossil under the dig's sand now: the top of `deck`, which is never empty. */
+export function fossilUnderSand(deck: readonly FossilId[]): FossilId {
+  return deck[0] ?? (FOSSIL_IDS[0] as FossilId);
 }
 
 /**
- * `deck` with `fossil` back on top, for a patch of sand left before its fossil was found: it's the next one dug up,
- * so leaving early never uses a fossil up unseen.
+ * `deck` once its top fossil is found. A fossil leaves the deck only when it's found, so leaving the dig early uses
+ * none up. A used-up deck is shuffled afresh, never starting with the fossil just found, so the same one never comes
+ * twice in a row.
  */
-export function returnFossil(deck: readonly FossilId[], fossil: FossilId): FossilId[] {
-  return [fossil, ...deck];
+export function afterFinding(deck: readonly FossilId[], random: () => number): FossilId[] {
+  const [found, ...rest] = deck;
+  if (rest.length > 0) {
+    return rest;
+  }
+  const next = shuffleFossils(random);
+  return next[0] === found && next.length > 1 ? [...next.slice(1), next[0] as FossilId] : next;
 }

@@ -44,7 +44,7 @@ import {
   stepCloseUp,
   touchCloseUp,
 } from '../core/closeUp';
-import { type FossilId, drawFossil, returnFossil, shuffleFossils } from '../core/fossils';
+import { afterFinding, fossilUnderSand, shuffleFossils } from '../core/fossils';
 import { type Subject, subjectAt, subjectKey, subjectPoint } from '../core/inspect';
 import { type Beat, type Focus, type LineId, rosieOnCard, rosieOnCloseUp, rosieSays, welcomeLine } from '../core/rosie';
 import { resumeCare, savePark } from '../core/save';
@@ -372,15 +372,8 @@ export function startGame(canvas: HTMLCanvasElement, mixer: Mixer, hooks: GameHo
     checkup: createCheckup(scene, camera, canvas),
     dig: digView,
   };
-  /** The fossils still to find, shuffled afresh each time the game opens, and the one found last (docs/design.md §5). */
+  /** The fossils still to find, the one under the sand first, shuffled afresh each time the game opens (§5). */
   let fossils = shuffleFossils(Math.random);
-  let lastFossil: FossilId | null = null;
-  function nextFossil(): FossilId {
-    const drawn = drawFossil(fossils, Math.random, lastFossil);
-    fossils = drawn.deck;
-    lastFossil = drawn.fossil;
-    return drawn.fossil;
-  }
   /** Whether the jeep was parked at the dig last frame, so only arriving there opens it, not staying. */
   let atDig = false;
 
@@ -801,8 +794,7 @@ export function startGame(canvas: HTMLCanvasElement, mixer: Mixer, hooks: GameHo
 
   /** Starts digging, as the jeep arrives at the dig (docs/design.md §5). */
   function startDigging(): void {
-    // Not asleep, nor reading a card, nor in the tour: checked before drawing, so no fossil is drawn for nothing.
-    const next = bedtime.asleep || inspecting || inTutorial(care) ? null : digCloseUp(nextFossil(), care);
+    const next = bedtime.asleep || inspecting ? null : digCloseUp(fossilUnderSand(fossils), care);
     if (!next) {
       return;
     }
@@ -830,11 +822,6 @@ export function startGame(canvas: HTMLCanvasElement, mixer: Mixer, hooks: GameHo
       return;
     }
     closeUpViews[closeUp.kind].stop();
-    // A patch left before its fossil was found keeps that fossil for next time. (Once one is found, `closeUp.fossil`
-    // is already the next patch's.)
-    if (closeUp.kind === 'dig') {
-      fossils = returnFossil(fossils, closeUp.fossil);
-    }
     closeUp = null;
     press = null;
     hooks.onCloseUp(null);
@@ -856,7 +843,8 @@ export function startGame(canvas: HTMLCanvasElement, mixer: Mixer, hooks: GameHo
           // Found: Rosie names it as it rises, and the next patch covers another, for as long as the child digs.
           playDeliver(mixer);
           say(rosieOnCloseUp(closeUp));
-          closeUp = nextPatch(closeUp, nextFossil());
+          fossils = afterFinding(fossils, Math.random);
+          closeUp = nextPatch(closeUp, fossilUnderSand(fossils));
           digView.queue(closeUp.fossil);
         }
         continue;

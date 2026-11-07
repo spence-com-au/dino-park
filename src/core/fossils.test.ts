@@ -14,7 +14,7 @@ function seeded(seed: number): () => number {
 describe('fossils', () => {
   it('has something to say about every fossil', () => {
     for (const id of FOSSIL_IDS) {
-      expect(FOSSILS[id].spoken).toMatch(/^a /);
+      expect(FOSSILS[id].spoken).toMatch(/^an? /);
       expect(FOSSILS[id].fact).toMatch(/[.!]$/);
     }
   });

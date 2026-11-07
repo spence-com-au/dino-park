@@ -176,8 +176,7 @@ Most under-5s can't steer with a virtual joystick, so the jeep drives itself.
   - **Eight fossils**, shuffled and not repeated until all are found each time the game opens:
     four from the park (a T. rex tooth, a Triceratops horn, a Stegosaurus plate, a big three-toed
     footprint) and four from beyond it (an ammonite, a trilobite, an Archaeopteryx feather, a
-    Megalodon tooth), each true to current palaeontology. The four from the park are in; the four
-    from beyond it are next.
+    Megalodon tooth), each true to current palaeontology.
   - **Digging is just for fun**: it earns no egg progress and saves nothing, so eggs still come
     only from looking after the dinosaurs.
 - Later, purely cosmetic: day/night and weather.

@@ -4,8 +4,23 @@ import type { NeedKind } from '../core/needs';
 import type { StationKind } from '../core/park';
 import { type Diet, SPECIES, type SpeciesId } from '../core/species';
 
-/** The pictures that stand in for words: what a dinosaur wants, what the jeep is carrying, and a pat's hearts. */
-export type Icon = 'leaf' | 'meat' | 'fish' | 'drop' | 'mud' | 'ball' | 'bandage' | 'soap' | 'heart';
+/**
+ * The pictures that stand in for words: what a dinosaur wants, what the jeep is carrying, a pat's hearts, and a
+ * check-up's stethoscope, the shiny spots it listens at and the gold star after.
+ */
+export type Icon =
+  | 'leaf'
+  | 'meat'
+  | 'fish'
+  | 'drop'
+  | 'mud'
+  | 'ball'
+  | 'bandage'
+  | 'soap'
+  | 'heart'
+  | 'stethoscope'
+  | 'sparkle'
+  | 'star';
 
 const FOOD_ICONS: Readonly<Record<Diet, Icon>> = { plants: 'leaf', meat: 'meat', fish: 'fish' };
 
@@ -159,6 +174,53 @@ function draw(ctx: CanvasRenderingContext2D, icon: Icon): void {
       ctx.bezierCurveTo(c + 30, c - 44, c + 52, c, c, c + 34);
       fill('#ff5e7e');
       circle(c - 16, c - 14, 6, '#ffc2cf');
+      break;
+    case 'stethoscope':
+      // Earpieces at the top, a tube looping down, and a big round chest piece at the bottom.
+      ctx.beginPath();
+      ctx.moveTo(c - 22, c - 34);
+      ctx.bezierCurveTo(c - 26, c + 6, c + 26, c + 6, c + 22, c - 34);
+      ctx.moveTo(c, c - 4);
+      ctx.bezierCurveTo(c, c + 18, c + 10, c + 18, c + 14, c + 20);
+      ctx.strokeStyle = '#3a6fd8';
+      ctx.lineWidth = 7;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+      circle(c - 22, c - 34, 6, '#555555');
+      circle(c + 22, c - 34, 6, '#555555');
+      circle(c + 16, c + 26, 14, '#c9ced6');
+      circle(c + 16, c + 26, 8, '#8d96a3');
+      break;
+    case 'sparkle':
+      circle(c, c, 22, 'rgba(255, 230, 120, 0.55)');
+      for (const [r, color] of [
+        [32, '#ffe36e'],
+        [16, '#fffbe0'],
+      ] as const) {
+        ctx.beginPath();
+        for (let i = 0; i < 8; i++) {
+          const angle = (i * Math.PI) / 4;
+          const reach = i % 2 === 0 ? r : r * 0.3;
+          ctx.lineTo(c + reach * Math.sin(angle), c - reach * Math.cos(angle));
+        }
+        ctx.closePath();
+        fill(color);
+      }
+      break;
+    case 'star':
+      ctx.beginPath();
+      for (let i = 0; i < 10; i++) {
+        const angle = (i * Math.PI) / 5;
+        const reach = i % 2 === 0 ? 40 : 17;
+        ctx.lineTo(c + reach * Math.sin(angle), c + 4 - reach * Math.cos(angle));
+      }
+      ctx.closePath();
+      fill('#ffc83a');
+      ctx.strokeStyle = '#e09a12';
+      ctx.lineWidth = 4;
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+      circle(c - 8, c - 6, 5, '#fff0b8');
       break;
   }
 }

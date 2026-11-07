@@ -145,6 +145,11 @@ describe('Ranger Rosie', () => {
     const fetching = { kind: 'fetch', species: 'trex', item: 'toys', done: 0, idle: 0 } as const;
     expect(rosieOnCloseUp(fetching)).toBe('rosie.fetch.trex');
     expect(rosieOnCloseUp({ ...fetching, done: 3 })).toBe('rosie.fetched.trex');
+    expect(lines.get('rosie.checkup.trex')).toBe("Let's give Rex a check-up! Touch the shiny spots!");
+    expect(lines.get('rosie.checkedup.velociraptor')).toBe('The Raptors are healthy and happy! A gold star!');
+    const checking = { kind: 'checkup', species: 'trex', item: 'vet', done: 0, idle: 0 } as const;
+    expect(rosieOnCloseUp(checking)).toBe('rosie.checkup.trex');
+    expect(rosieOnCloseUp({ ...checking, done: 3 })).toBe('rosie.checkedup.trex');
     // Every species has a line for every food it eats, and for water.
     for (const species of [...LAUNCH_SPECIES, ...UNLOCK_ORDER]) {
       for (const kind of ['hungry', 'thirsty'] as const) {

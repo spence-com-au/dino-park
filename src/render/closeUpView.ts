@@ -64,6 +64,35 @@ export function modelPoints(object: THREE.Object3D): { points: THREE.Vector3[]; 
   return { points, reach: points.map((point) => point.dot(forward)) };
 }
 
+/**
+ * The point on a model's side the camera sees, for the stretch of it between `from` and `to` along the way it faces (as
+ * `modelPoints` gives `reach`): the middle of that stretch, pushed out to its side towards the camera and lifted `lift`
+ * of the way from its middle to its top, so it sits on its body rather than on spikes and plates. Null when the stretch
+ * has no points.
+ */
+export function sideOf(
+  { points, reach }: { points: readonly THREE.Vector3[]; reach: readonly number[] },
+  from: number,
+  to: number,
+  lift: number,
+  camera: THREE.Camera,
+  target: THREE.Vector3,
+): THREE.Vector3 | null {
+  const stretch = points.filter((_, i) => (reach[i] ?? -Infinity) >= from && (reach[i] ?? -Infinity) < to);
+  if (stretch.length === 0) {
+    return null;
+  }
+  const middle = stretch.reduce((sum, point) => sum.add(point), new THREE.Vector3()).divideScalar(stretch.length);
+  const top = Math.max(...stretch.map((point) => point.y));
+  const toCamera = new THREE.Vector3(camera.position.x - middle.x, 0, camera.position.z - middle.z).normalize();
+  // How far its side reaches out towards the camera.
+  const side = Math.max(...stretch.map((point) => point.clone().sub(middle).setY(0).dot(toCamera)));
+  return target
+    .copy(middle)
+    .addScaledVector(toCamera, side)
+    .setY(middle.y + lift * (top - middle.y));
+}
+
 /** A point on the plane facing the camera through `through`, under a pointer at `clientX`, `clientY`. */
 export function pointerAt(
   canvas: HTMLCanvasElement,

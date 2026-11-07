@@ -86,7 +86,7 @@ score.**
   at most every 20 seconds and never during the tour or over another line, Rosie says how much it
   loves a tickle ("Rex loves a tickle!"). A pat is just for fun: it meets no need and fills no
   meter, and the jeep stays where it is.
-- **Close-ups.** Some deliveries open a close-up: the camera moves in on the dinosaur for a
+- **Close-ups.** Every delivery opens a close-up: the camera moves in on the dinosaur for a
   little game with it. The delivery has already met the need, so a close-up is all reward: it
   can't be got wrong, it ends by itself after 15 seconds left alone, and a red cross takes the
   child (or a grown-up) straight back to the park. In a close-up the park is out of reach: taps
@@ -105,6 +105,12 @@ score.**
     the dinosaur runs after it, carries it back on its back and giggles. Three fetches and Rosie
     says it loves playing fetch ("Good catch! Rex loves playing fetch!"). The dinosaur stays where
     it dropped the ball rather than jumping back to where it stood.
+  - **Check-up**, after the vet. A friendly check-up rather than mending a hurt, since needs never
+    hurt a dinosaur: a shiny spot glows on its chest, then its tummy, then its tail, one at a time,
+    and the child drags a big stethoscope onto each (or taps the spot or the stethoscope, and it
+    hops there). Its chest goes thump-thump, its tummy rumbles and its tail giggles, all
+    synthesised. After the tail a gold star pops on its side and fades, and Rosie says it's healthy
+    ("Rex is healthy and happy! A gold star!"). The star is only for the moment: nothing is saved.
 
 ## 4. Driving, controls and camera
 
@@ -157,6 +163,22 @@ Most under-5s can't steer with a virtual joystick, so the jeep drives itself.
   happen rather than it happening somewhere off-screen. Needs met while a full egg waits count
   towards the next one. The nest is a place like a station, with its own road stop beside the
   junction at the middle of the park.
+- **Fossil dig.** A sandy dig site at the end of a short road west of the loop, past the water
+  tower, open from the start; there is something to do whatever the dinosaurs want. It's a place
+  like a station, with a sign (a bone, holding still) and a card ("This is the dig site. Let's dig
+  for fossils!"), but Rosie's help never sends the child there and the tour never mentions it,
+  since it isn't a job. Stopping there opens a close-up of a sand patch with five mounds, each
+  brushed away by rubbing (or two taps), as in washing. Under it is a fossil, built from primitives
+  like the other props, which sparkles; Rosie names it and says a fact, and it flies into a crate
+  by the digger hut while a fresh patch slides in. The child digs as long as they like: the red
+  cross or 15 seconds left alone goes back to the park, and only driving away and back opens it
+  again. Needs keep coming meanwhile, their bubbles and calls saying someone wants help.
+  - **Eight fossils**, shuffled and not repeated until all are found each time the game opens:
+    four from the park (a T. rex tooth, a Triceratops horn, a Stegosaurus plate, a big three-toed
+    footprint) and four from beyond it (an ammonite, a trilobite, an Archaeopteryx feather, a
+    Megalodon tooth), each true to current palaeontology.
+  - **Digging is just for fun**: it earns no egg progress and saves nothing, so eggs still come
+    only from looking after the dinosaurs.
 - Later, purely cosmetic: day/night and weather.
 
 ## 6. Ranger Rosie, voice and sound
@@ -364,5 +386,5 @@ Each milestone is a stack of small PRs (under ~1,500 changed lines each).
 - **M2: More park.** Pterodactyl aviary and fish pond; Ankylosaurus and further unlocks; baby
   dinosaurs; the bedtime timer; automatic quality steps verified on real budget tablets.
 - **M3: Polish and family.** Sibling profiles; day/night and weather; jeep colour choice;
-  close-ups (feeding by hand, washing and fetch are in).
+  close-ups (feeding by hand, washing, fetch and the check-up are in); the fossil dig.
 - **Later:** recorded voices replacing TTS, translations, a Capacitor App Store wrapper.

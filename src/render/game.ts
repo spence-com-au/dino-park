@@ -3,10 +3,12 @@ import * as THREE from 'three';
 import {
   playDeliver,
   playGiggle,
+  playHeartbeat,
   playHatch,
   playHonk,
   playLoad,
   playMunch,
+  playRumble,
   playScrub,
   playNeed,
   startEngine,
@@ -30,6 +32,7 @@ import {
 import { PAT_SECONDS, PAT_TALK_SECONDS, patAt } from '../core/pat';
 import {
   type CloseUp,
+  CLOSE_UP_GOALS,
   closeUpAfter,
   closeUpFinished,
   progressCloseUp,
@@ -49,6 +52,7 @@ import { buildRosie } from './rosieModel';
 import type { CloseUpView } from './closeUpView';
 import { createFeeding } from './feeding';
 import { createWashing } from './washing';
+import { createCheckup } from './checkup';
 import { createFetching } from './fetching';
 import { cargoIcon, iconMaterial, needIcon, stationIcon } from './icons';
 import { buildJeep } from './jeepModel';
@@ -122,10 +126,15 @@ const SPOTLIGHT_ZOOM = 0.55;
 const SPOTLIGHT_SECONDS = 2.5;
 /**
  * A close-up moves the camera in this close: washing closer than feeding, which needs room between the jeep and the
- * mouth, and fetch least, so the whole pen is in view to throw across. It lingers on the dinosaur this long once it's
- * finished.
+ * mouth, a check-up between them, and fetch least, so the whole pen is in view to throw across. It lingers on the
+ * dinosaur this long once it's finished.
  */
-const CLOSE_UP_ZOOM: Readonly<Record<CloseUp['kind'], number>> = { feed: 0.45, wash: 0.33, fetch: 0.6 };
+const CLOSE_UP_ZOOM: Readonly<Record<CloseUp['kind'], number>> = {
+  feed: 0.45,
+  wash: 0.33,
+  fetch: 0.6,
+  checkup: 0.38,
+};
 const CLOSE_UP_LINGER_SECONDS = 2;
 /** While Rosie talks about a place the camera shows it, and holds there this much longer once she's finished. */
 const FOCUS_LINGER_SECONDS = 0.5;
@@ -328,6 +337,7 @@ export function startGame(canvas: HTMLCanvasElement, mixer: Mixer, hooks: GameHo
     feed: createFeeding(scene, camera, canvas),
     wash: createWashing(scene, camera, canvas),
     fetch: createFetching(scene, camera, canvas),
+    checkup: createCheckup(scene, camera, canvas),
   };
 
   /** A pat's hearts rising from a dinosaur, removed once they fade. */
@@ -776,6 +786,9 @@ export function startGame(canvas: HTMLCanvasElement, mixer: Mixer, hooks: GameHo
         playMunch(mixer);
       } else if (closeUp.kind === 'wash') {
         playScrub(mixer);
+      } else if (closeUp.kind === 'checkup' && closeUp.done < CLOSE_UP_GOALS.checkup) {
+        // Its heart, then its tummy; its tail is ticklish.
+        (closeUp.done === 1 ? playHeartbeat : playRumble)(mixer);
       } else {
         playGiggle(mixer);
       }

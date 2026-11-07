@@ -801,7 +801,8 @@ export function startGame(canvas: HTMLCanvasElement, mixer: Mixer, hooks: GameHo
 
   /** Starts digging, as the jeep arrives at the dig (docs/design.md §5). */
   function startDigging(): void {
-    const next = bedtime.asleep || inspecting ? null : digCloseUp(nextFossil(), care);
+    // Not asleep, nor reading a card, nor in the tour; checked before drawing, so no fossil is used up unseen.
+    const next = bedtime.asleep || inspecting || inTutorial(care) ? null : digCloseUp(nextFossil(), care);
     if (!next) {
       return;
     }

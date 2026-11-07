@@ -76,6 +76,8 @@ export function createDigging(
     return model;
   }
   let fossil: THREE.Group | null = null;
+  /** The fossil under this patch of sand, and the one just found, while it shows. */
+  let shown: FossilId | null = null;
   let found: FossilId | null = null;
   let queued: FossilId | null = null;
   let state: 'idle' | 'digging' | 'rising' | 'showing' | 'flying' | 'regrowing' = 'idle';
@@ -92,6 +94,7 @@ export function createDigging(
       scene.remove(fossil);
     }
     fossil = modelOf(id);
+    shown = id;
     fossil.position.set(centre.x, BURIED_Y, centre.z);
     fossil.rotation.set(0, 0.4, 0);
     fossil.scale.setScalar(1);
@@ -253,7 +256,7 @@ export function createDigging(
         if (state === 'rising' && risen >= 1) {
           state = 'showing';
           timer = 0;
-          found = fossil.name.replace('fossil-', '') as FossilId;
+          found = shown;
         } else if (state === 'showing' && timer >= SHOW_SECONDS) {
           state = 'flying';
           timer = 0;

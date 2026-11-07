@@ -110,7 +110,7 @@ export const PARK: Park = {
   ],
   // Beside the junction at the middle of the park, which is the nest's road stop.
   nest: { x: 6, z: 0 },
-  // Where the dig's road ends, so stopping at the end of it is visiting the dig.
+  // The middle of the sand, 6 m past the end of its road: within reach, so stopping at the road's end visits the dig.
   dig: { x: -56, z: 0 },
   start: { x: 0, z: 24 },
 };

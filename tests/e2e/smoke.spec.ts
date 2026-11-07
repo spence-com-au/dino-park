@@ -1034,7 +1034,7 @@ test('drives down its own road to the fossil dig, which has a card of its own', 
   await arrive();
   await expect(canvas).toHaveAttribute('data-visiting', 'station.water');
   await playFor(page, 3000);
-  // Its bone floats over the hut beside the sand: a tap on it goes there.
+  // Its bone floats high over the middle of the sand, which from here puts it just left of the hut: a tap on it goes there.
   await canvas.click({ position: at(0.025, 0.37) });
   await arrive();
   await expect(canvas).toHaveAttribute('data-visiting', 'dig');

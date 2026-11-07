@@ -6,7 +6,7 @@ import { type Diet, SPECIES, type SpeciesId } from '../core/species';
 
 /**
  * The pictures that stand in for words: what a dinosaur wants, what the jeep is carrying, a pat's hearts, and a
- * check-up's stethoscope, the shiny spots it listens at and the gold star after, and the fossil dig's bone.
+ * check-up's stethoscope, the shiny spots it listens at and the gold star after, and the fossil dig's bone and brush.
  */
 export type Icon =
   | 'leaf'
@@ -21,7 +21,8 @@ export type Icon =
   | 'stethoscope'
   | 'sparkle'
   | 'star'
-  | 'bone';
+  | 'bone'
+  | 'brush';
 
 const FOOD_ICONS: Readonly<Record<Diet, Icon>> = { plants: 'leaf', meat: 'meat', fish: 'fish' };
 
@@ -222,6 +223,35 @@ function draw(ctx: CanvasRenderingContext2D, icon: Icon): void {
       ctx.lineJoin = 'round';
       ctx.stroke();
       circle(c - 8, c - 6, 5, '#fff0b8');
+      break;
+    case 'brush':
+      // A wide dusting brush on the slant: a wooden handle and a fan of bristles.
+      ctx.save();
+      ctx.translate(c, c);
+      ctx.rotate(Math.PI / 5);
+      ctx.fillStyle = '#c0843f';
+      ctx.beginPath();
+      ctx.roundRect(-6, -40, 12, 42, 6);
+      ctx.fill();
+      ctx.fillStyle = '#9aa3ad';
+      ctx.fillRect(-14, 0, 28, 8);
+      ctx.fillStyle = '#f2d16b';
+      ctx.beginPath();
+      ctx.moveTo(-14, 8);
+      ctx.lineTo(14, 8);
+      ctx.lineTo(18, 34);
+      ctx.lineTo(-18, 34);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = '#d4ad3f';
+      ctx.lineWidth = 2;
+      for (const x of [-9, -3, 3, 9]) {
+        ctx.beginPath();
+        ctx.moveTo(x, 12);
+        ctx.lineTo(x * 1.2, 32);
+        ctx.stroke();
+      }
+      ctx.restore();
       break;
     case 'bone':
       // A cartoon bone: a shaft with two knobbly ends, on the slant.

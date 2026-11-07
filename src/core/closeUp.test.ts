@@ -5,6 +5,8 @@ import {
   CLOSE_UP_IDLE_SECONDS,
   closeUpAfter,
   closeUpFinished,
+  digCloseUp,
+  nextPatch,
   progressCloseUp,
   stepCloseUp,
   touchCloseUp,
@@ -92,5 +94,18 @@ describe('close-ups', () => {
     closeUp = closeUp && touchCloseUp(closeUp);
     expect(closeUp).toMatchObject({ done: 0, idle: 0 });
     expect(closeUp && stepCloseUp(closeUp, CLOSE_UP_IDLE_SECONDS - 1)).not.toBeNull();
+  });
+
+  it('digs for fossils once the tour is over, a patch at a time, for as long as the child likes', () => {
+    expect(digCloseUp('trex-tooth', { ...played, needsMet: 0 })).toBeNull();
+    let dig = digCloseUp('trex-tooth', played);
+    expect(dig).toEqual({ kind: 'dig', fossil: 'trex-tooth', done: 0, idle: 0 });
+    for (let mound = 0; dig && mound < CLOSE_UP_GOALS.dig; mound++) {
+      expect(closeUpFinished(dig)).toBe(false);
+      dig = progressCloseUp(dig);
+    }
+    expect(dig && closeUpFinished(dig)).toBe(true);
+    dig = dig && nextPatch(stepCloseUp(dig, 3) ?? dig, 'footprint');
+    expect(dig).toEqual({ kind: 'dig', fossil: 'footprint', done: 0, idle: 0 });
   });
 });

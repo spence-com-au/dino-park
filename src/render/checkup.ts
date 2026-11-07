@@ -2,7 +2,15 @@ import * as THREE from 'three';
 
 import { CLOSE_UP_GOALS } from '../core/closeUp';
 import { penGate } from '../core/park';
-import { type CloseUpView, canvasPoint, formatMark, modelPoints, pointerAt, screenGap, sideOf } from './closeUpView';
+import {
+  type CareCloseUpView,
+  canvasPoint,
+  formatMark,
+  modelPoints,
+  pointerAt,
+  screenGap,
+  sideOf,
+} from './closeUpView';
 import { iconMaterial } from './icons';
 
 /** How big the stethoscope and the shiny spot are. */
@@ -29,7 +37,7 @@ const STAR_SIZE = 2.4;
  * tail, and a stethoscope to drag onto it. A tap on the spot, or on the stethoscope, hops it there for children who
  * can't drag yet. After the last one a gold star pops on and fades.
  */
-export function createCheckup(scene: THREE.Scene, camera: THREE.Camera, canvas: HTMLCanvasElement): CloseUpView {
+export function createCheckup(scene: THREE.Scene, camera: THREE.Camera, canvas: HTMLCanvasElement): CareCloseUpView {
   // Drawn over the dinosaur, so its plates and spikes never hide them.
   const stethoscope = new THREE.Sprite(iconMaterial('stethoscope'));
   stethoscope.renderOrder = 2;

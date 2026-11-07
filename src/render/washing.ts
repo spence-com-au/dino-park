@@ -2,7 +2,16 @@ import * as THREE from 'three';
 
 import { CLOSE_UP_GOALS } from '../core/closeUp';
 import { scrub } from '../core/wash';
-import { type CloseUpView, canvasPoint, formatMark, modelPoints, pointerAt, screenGap, sideOf } from './closeUpView';
+import {
+  type CareCloseUpView,
+  canvasPoint,
+  createRubbing,
+  formatMark,
+  modelPoints,
+  nearestWithin,
+  pointerAt,
+  sideOf,
+} from './closeUpView';
 import { iconMaterial } from './icons';
 
 /** How big a splat of mud is, and how close on screen, in CSS pixels, a finger must be to rub it. */
@@ -22,7 +31,7 @@ const BUBBLE_EVERY_PX = 60;
  * Washing a dinosaur (docs/design.md §3): splats of mud along its side, each rubbed off (or tapped twice) with a
  * sponge that follows the finger, in a froth of bubbles.
  */
-export function createWashing(scene: THREE.Scene, camera: THREE.Camera, canvas: HTMLCanvasElement): CloseUpView {
+export function createWashing(scene: THREE.Scene, camera: THREE.Camera, canvas: HTMLCanvasElement): CareCloseUpView {
   const splats: { sprite: THREE.Sprite; mud: number }[] = [];
   const bubbles: { sprite: THREE.Sprite; age: number }[] = [];
   const mudMaterial = iconMaterial('mud', { bare: true }).clone();
@@ -32,8 +41,7 @@ export function createWashing(scene: THREE.Scene, camera: THREE.Camera, canvas: 
   sponge.visible = false;
   scene.add(sponge);
 
-  let pressing = false;
-  let last: { x: number; y: number } | null = null;
+  const rubbing = createRubbing();
   let sinceBubble = 0;
   /** Splats washed off since the last update. */
   let washed = 0;
@@ -52,16 +60,15 @@ export function createWashing(scene: THREE.Scene, camera: THREE.Camera, canvas: 
 
   /** The muddy splat nearest a finger at `clientX`, `clientY`, if it's close enough to rub. */
   function splatAt(clientX: number, clientY: number): { sprite: THREE.Sprite; mud: number } | undefined {
-    let nearest: { sprite: THREE.Sprite; mud: number } | undefined;
-    let nearestGap = RUB_PX;
-    for (const splat of splats) {
-      const gap = screenGap(canvas, camera, splat.sprite.position, clientX, clientY);
-      if (splat.mud > 0 && gap <= nearestGap) {
-        nearest = splat;
-        nearestGap = gap;
-      }
-    }
-    return nearest;
+    return nearestWithin(
+      canvas,
+      camera,
+      splats,
+      (splat) => (splat.mud > 0 ? splat.sprite.position : null),
+      clientX,
+      clientY,
+      RUB_PX,
+    );
   }
 
   /** Rubs `rubbedPx` (or taps) at `clientX`, `clientY`, on the splat nearest it: one at a time, so each counts. */
@@ -123,23 +130,20 @@ export function createWashing(scene: THREE.Scene, camera: THREE.Camera, canvas: 
     stop() {
       clearSplats();
       sponge.visible = false;
-      pressing = false;
-      last = null;
+      rubbing.end();
     },
     press(clientX, clientY) {
       if (splats.length === 0) {
         return false;
       }
-      pressing = true;
-      last = { x: clientX, y: clientY };
+      rubbing.press(clientX, clientY);
       return true;
     },
     drag(clientX, clientY) {
-      if (!pressing || !last) {
+      const moved = rubbing.move(clientX, clientY);
+      if (moved === null) {
         return;
       }
-      const moved = Math.hypot(clientX - last.x, clientY - last.y);
-      last = { x: clientX, y: clientY };
       const near = splatAt(clientX, clientY);
       if (near) {
         pointerAt(canvas, camera, near.sprite.position, clientX, clientY, sponge.position);
@@ -155,16 +159,14 @@ export function createWashing(scene: THREE.Scene, camera: THREE.Camera, canvas: 
       rub(clientX, clientY, moved, false);
     },
     cancel() {
-      pressing = false;
-      last = null;
+      rubbing.end();
       sponge.visible = false;
     },
     release(clientX, clientY, tapped) {
       if (tapped) {
         rub(clientX, clientY, 0, true);
       }
-      pressing = false;
-      last = null;
+      rubbing.end();
       sponge.visible = false;
     },
     update(delta) {

@@ -170,13 +170,14 @@ Most under-5s can't steer with a virtual joystick, so the jeep drives itself.
   since it isn't a job. Stopping there opens a close-up of a sand patch with five mounds, each
   brushed away by rubbing (or two taps), as in washing. Under it is a fossil, built from primitives
   like the other props, which sparkles; Rosie names it and says a fact, and it flies into a crate
-  by the digger hut while a fresh patch slides in. The child digs as long as they like: the red
+  by the digger hut while a fresh patch grows in. The child digs as long as they like: the red
   cross or 15 seconds left alone goes back to the park, and only driving away and back opens it
-  again. Needs keep coming meanwhile, their bubbles and calls saying someone wants help.
+  again. It doesn't open during the tour, so Rosie's steps aren't talked over. Needs keep coming meanwhile, their bubbles and calls saying someone wants help.
   - **Eight fossils**, shuffled and not repeated until all are found each time the game opens:
     four from the park (a T. rex tooth, a Triceratops horn, a Stegosaurus plate, a big three-toed
     footprint) and four from beyond it (an ammonite, a trilobite, an Archaeopteryx feather, a
-    Megalodon tooth), each true to current palaeontology.
+    Megalodon tooth), each true to current palaeontology. The four from the park are in; the four
+    from beyond it are next.
   - **Digging is just for fun**: it earns no egg progress and saves nothing, so eggs still come
     only from looking after the dinosaurs.
 - Later, purely cosmetic: day/night and weather.

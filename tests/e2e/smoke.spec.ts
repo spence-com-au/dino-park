@@ -1022,7 +1022,9 @@ test('a double tap opens a card about a station, the egg nest or Rosie', async (
   await expect(rosie.getByText(/sun and the rain/)).toBeVisible();
 });
 
-test('drives down its own road to the fossil dig, which has a card of its own', async ({ page }) => {
+test('drives down its own road to the fossil dig, to dig for fossils for as long as the child likes', async ({
+  page,
+}) => {
   test.slow();
   const { canvas, at } = await openPlayedPark(page);
   const arrive = async () => {
@@ -1037,6 +1039,50 @@ test('drives down its own road to the fossil dig, which has a card of its own', 
   // Its bone floats high over the middle of the sand, which from here puts it just left of the hut: a tap on it goes there.
   await canvas.click({ position: at(0.025, 0.37) });
   await arrive();
+  await expect(canvas).toHaveAttribute('data-visiting', 'dig');
+
+  // Arriving opens the dig, and Rosie says what to do.
+  await playFor(page, 500);
+  await expect(canvas).toHaveAttribute('data-close-up', 'dig');
+  await expect(canvas).toHaveAttribute('data-rosie', 'rosie.dig');
+  const back = page.getByRole('button', { name: strings.backToPark });
+  await expect(back).toBeVisible();
+  // Each mound of sand goes with two taps, for children who can't rub yet.
+  const mounds = async () =>
+    ((await canvas.getAttribute('data-mounds')) ?? '')
+      .split(';')
+      .filter(Boolean)
+      .map((mark) => {
+        const [x = 0, y = 0] = mark.split(',').map(Number);
+        return { x, y };
+      });
+  expect(await mounds()).toHaveLength(5);
+  for (let mound = 1; mound <= 5; mound++) {
+    const [first] = await mounds();
+    if (!first) {
+      throw new Error('No mound left to brush');
+    }
+    await canvas.click({ position: first });
+    await playFor(page, 200);
+    await canvas.click({ position: first });
+    await playFor(page, 300);
+    if (mound < 5) {
+      await expect(canvas).toHaveAttribute('data-close-up-done', String(mound));
+    }
+  }
+  // With the sand gone, the fossil rises and Rosie names it; then a fresh patch covers the next one.
+  await playFor(page, 1000);
+  await expect(canvas).toHaveAttribute('data-fossil', /.+/);
+  const found = await canvas.getAttribute('data-fossil');
+  await expect(canvas).toHaveAttribute('data-rosie', `rosie.fossil.${found}`);
+  await playFor(page, 6000, async () => (await mounds()).length === 5);
+  expect(await mounds()).toHaveLength(5);
+  await expect(canvas).toHaveAttribute('data-close-up', 'dig');
+
+  // The red cross goes back to the park, and staying at the dig doesn't open it again.
+  await back.click();
+  await playFor(page, 1000);
+  await expect(canvas).toHaveAttribute('data-close-up', '');
   await expect(canvas).toHaveAttribute('data-visiting', 'dig');
 
   // Parked at the sand, which is in the middle of the screen now, a double tap opens its card.

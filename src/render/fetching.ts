@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 import { type Fetch, THROW_SECONDS, ballHeight, startFetch, stepFetch, throwBall } from '../core/fetch';
 import type { Pen } from '../core/park';
-import { type CloseUpView, canvasPoint, formatMark } from './closeUpView';
+import { type CareCloseUpView, canvasPoint, formatMark } from './closeUpView';
 import type { DinoInstance } from './dinoSkin';
 import { iconMaterial } from './icons';
 
@@ -17,7 +17,7 @@ const TURN_RATE = 10;
  * Playing fetch (docs/design.md §3): the ball waits by the gate, a tap in the pen throws it there, and the first of the
  * herd runs after it and carries it back. The rest of the herd stays where it is.
  */
-export function createFetching(scene: THREE.Scene, camera: THREE.Camera, canvas: HTMLCanvasElement): CloseUpView {
+export function createFetching(scene: THREE.Scene, camera: THREE.Camera, canvas: HTMLCanvasElement): CareCloseUpView {
   const ball = new THREE.Sprite(iconMaterial('ball', { bare: true }));
   ball.scale.setScalar(BALL_SIZE);
   ball.visible = false;

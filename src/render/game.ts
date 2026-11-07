@@ -33,14 +33,18 @@ import {
 } from '../core/needs';
 import { PAT_SECONDS, PAT_TALK_SECONDS, patAt } from '../core/pat';
 import {
+  type CareCloseUp,
   type CloseUp,
   CLOSE_UP_GOALS,
   closeUpAfter,
   closeUpFinished,
+  digCloseUp,
+  nextPatch,
   progressCloseUp,
   stepCloseUp,
   touchCloseUp,
 } from '../core/closeUp';
+import { afterFinding, fossilUnderSand, shuffleFossils } from '../core/fossils';
 import { type Subject, subjectAt, subjectKey, subjectPoint } from '../core/inspect';
 import { type Beat, type Focus, type LineId, rosieOnCard, rosieOnCloseUp, rosieSays, welcomeLine } from '../core/rosie';
 import { resumeCare, savePark } from '../core/save';
@@ -51,10 +55,11 @@ import { nextHint } from '../core/help';
 import { holdUntilDriven, tourStep } from '../core/tour';
 import { type DinoInstance, type DinoSkin, loadDinoSkin } from './dinoSkin';
 import { buildRosie } from './rosieModel';
-import type { CloseUpView } from './closeUpView';
+import type { CareCloseUpView, CloseUpView } from './closeUpView';
 import { createFeeding } from './feeding';
 import { createWashing } from './washing';
 import { createCheckup } from './checkup';
+import { createDigging } from './digging';
 import { createFetching } from './fetching';
 import { cargoIcon, iconMaterial, needIcon, stationIcon } from './icons';
 import { buildJeep } from './jeepModel';
@@ -132,6 +137,7 @@ const SPOTLIGHT_SECONDS = 2.5;
  * dinosaur this long once it's finished.
  */
 const CLOSE_UP_ZOOM: Readonly<Record<CloseUp['kind'], number>> = {
+  dig: 0.4,
   feed: 0.45,
   wash: 0.33,
   fetch: 0.6,
@@ -358,12 +364,18 @@ export function startGame(canvas: HTMLCanvasElement, mixer: Mixer, hooks: GameHo
 
   /** The close-up the camera is in, if any, and the food waiting in it. */
   let closeUp: CloseUp | null = null;
-  const closeUpViews: Readonly<Record<CloseUp['kind'], CloseUpView>> = {
+  const digView = createDigging(scene, camera, canvas, PARK.dig);
+  const careViews: Readonly<Record<CareCloseUp['kind'], CareCloseUpView>> = {
     feed: createFeeding(scene, camera, canvas),
     wash: createWashing(scene, camera, canvas),
     fetch: createFetching(scene, camera, canvas),
     checkup: createCheckup(scene, camera, canvas),
   };
+  const closeUpViews: Readonly<Record<CloseUp['kind'], CloseUpView>> = { ...careViews, dig: digView };
+  /** The fossils still to find, the one under the sand first, shuffled afresh each time the game opens (§5). */
+  let fossils = shuffleFossils(Math.random);
+  /** Whether the jeep was parked at the dig last frame, so only arriving there opens it, not staying. */
+  let atDig = false;
 
   /** A pat's hearts rising from a dinosaur, removed once they fade. */
   const hearts: { sprite: THREE.Sprite; age: number; drift: number }[] = [];
@@ -767,12 +779,35 @@ export function startGame(canvas: HTMLCanvasElement, mixer: Mixer, hooks: GameHo
   }
 
   /** Starts `next`, if its dinosaurs are in the park to give things to. Whether it started. */
-  function startCloseUp(next: CloseUp): boolean {
+  function startCloseUp(next: CareCloseUp): boolean {
     const herd = herds.get(next.species);
     const pen = PARK.pens.find((candidate) => candidate.species === next.species);
     if (!herd?.length || !pen || bedtime.asleep) {
       return false;
     }
+    openCloseUp();
+    careViews[next.kind].start(herd, next.item, pen);
+    closeUp = next;
+    hooks.onCloseUp(next);
+    return true;
+  }
+
+  /** Starts digging, as the jeep arrives at the dig (docs/design.md §5). */
+  function startDigging(): void {
+    // An open card doesn't stop it: opening closes the card, as a care close-up does.
+    const next = bedtime.asleep ? null : digCloseUp(fossilUnderSand(fossils), care);
+    if (!next) {
+      return;
+    }
+    openCloseUp();
+    digView.begin(next.fossil);
+    closeUp = next;
+    hooks.onCloseUp(next);
+    say(rosieOnCloseUp(next));
+  }
+
+  /** What every close-up does as it opens: the park goes out of reach, and the jeep stays where it is. */
+  function openCloseUp(): void {
     closeCard();
     // A close-up measures its dinosaur as it opens, so one turned to look at a honk faces the way it did first.
     if (looking) {
@@ -781,10 +816,6 @@ export function startGame(canvas: HTMLCanvasElement, mixer: Mixer, hooks: GameHo
     }
     press = null;
     jeep = pullOver(jeep);
-    closeUpViews[next.kind].start(herd, next.item, pen);
-    closeUp = next;
-    hooks.onCloseUp(next);
-    return true;
   }
 
   function endCloseUp(): void {
@@ -807,6 +838,18 @@ export function startGame(canvas: HTMLCanvasElement, mixer: Mixer, hooks: GameHo
     for (let step = 0; closeUp && step < steps; step++) {
       closeUp = progressCloseUp(closeUp);
       sinceProgress = 0;
+      if (closeUp.kind === 'dig') {
+        playScrub(mixer);
+        if (closeUpFinished(closeUp)) {
+          // Found: Rosie names it as it rises, and the next patch covers another, for as long as the child digs.
+          playDeliver(mixer);
+          say(rosieOnCloseUp(closeUp));
+          fossils = afterFinding(fossils, Math.random);
+          closeUp = nextPatch(closeUp, fossilUnderSand(fossils));
+          digView.queue(closeUp.fossil);
+        }
+        continue;
+      }
       if (closeUp.kind === 'feed') {
         playMunch(mixer);
       } else if (closeUp.kind === 'wash') {
@@ -909,8 +952,12 @@ export function startGame(canvas: HTMLCanvasElement, mixer: Mixer, hooks: GameHo
         spotlight = null;
       }
     }
-    // A close-up holds the camera in on its dinosaur.
-    const closeTo = closeUp && PARK.pens.find((pen) => pen.species === closeUp?.species)?.position;
+    // A close-up holds the camera in on its dinosaur, or the dig's sand.
+    const current = closeUp;
+    const closeTo =
+      current?.kind === 'dig'
+        ? PARK.dig
+        : current && PARK.pens.find((pen) => pen.species === current.species)?.position;
     if (closeTo) {
       spotlight = { point: closeTo, left: Math.max(spotlight?.left ?? 0, CLOSE_UP_LINGER_SECONDS) };
     }
@@ -1175,7 +1222,14 @@ export function startGame(canvas: HTMLCanvasElement, mixer: Mixer, hooks: GameHo
       wheel.rotation.x += (jeep.speed * delta) / 0.55;
     }
     canvas.dataset.moving = String(jeep.route.length > 0);
-    canvas.dataset.visiting = jeep.route.length > 0 ? '' : visitKey(visitedPlace(PARK, jeep.position));
+    const visiting = jeep.route.length > 0 ? undefined : visitedPlace(PARK, jeep.position);
+    canvas.dataset.visiting = visitKey(visiting);
+    // Arriving at the dig opens it; staying there after leaving it doesn't, until the jeep drives away and back.
+    const nowAtDig = visiting !== undefined && 'dig' in visiting;
+    if (nowAtDig && !atDig && !closeUp && loaded) {
+      startDigging();
+    }
+    atDig = nowAtDig;
     updateTrail();
     updateCare(delta);
     canvas.dataset.speaking = String(rosieVoice.speaking);
@@ -1387,6 +1441,8 @@ export function startGame(canvas: HTMLCanvasElement, mixer: Mixer, hooks: GameHo
       canvas.removeEventListener('pointermove', onPointerMove);
       canvas.removeEventListener('pointerup', onPointerUp);
       canvas.removeEventListener('pointercancel', onPointerCancel);
+      // Fossil models wait off-stage between digs, out of the scene's reach.
+      digView.dispose();
       scene.traverse((object) => {
         if (object instanceof THREE.Mesh) {
           object.geometry.dispose();

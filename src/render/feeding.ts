@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 import { penGate } from '../core/park';
 
-import { type CloseUpView, canvasPoint, formatMark, modelPoints, pointerAt, screenGap } from './closeUpView';
+import { type CareCloseUpView, canvasPoint, formatMark, modelPoints, pointerAt, screenGap } from './closeUpView';
 import { cargoIcon, iconMaterial } from './icons';
 
 /** How big the food is, and how close on screen, in CSS pixels, a press must be to pick it up. */
@@ -32,7 +32,7 @@ function headOf(object: THREE.Object3D, target: THREE.Vector3): THREE.Vector3 {
  * Feeding a dinosaur by hand (docs/design.md §3): the food waits by the jeep for the child to drag to its mouth. A tap
  * on the food sends it there too, for children who can't drag yet; dropped anywhere else, it floats back.
  */
-export function createFeeding(scene: THREE.Scene, camera: THREE.Camera, canvas: HTMLCanvasElement): CloseUpView {
+export function createFeeding(scene: THREE.Scene, camera: THREE.Camera, canvas: HTMLCanvasElement): CareCloseUpView {
   const food = new THREE.Sprite();
   food.scale.setScalar(FOOD_SIZE);
   food.visible = false;

@@ -142,10 +142,12 @@ function buildNest(): THREE.Group {
 
 /** How tall the dig's hut is, so its sign can float just above the sand beside it. */
 export const DIG_TOP = 3.2;
+/** Where the dig's crate for what's found stands, from the middle of the sand: the found fossil flies into it. */
+export const DIG_CRATE = { x: 2.6, z: -5 } as const;
 
 /**
- * The fossil dig (docs/design.md §5): a round patch of sand with mounds to brush away, a little digger hut behind it
- * and a crate for what's found, at the end of its road (which comes in from the east).
+ * The fossil dig (docs/design.md §5): a round patch of sand, a little digger hut behind it and a crate for what's
+ * found, at the end of its road (which comes in from the east). The mounds of sand to brush away are `digging`'s.
  */
 function buildDig(): THREE.Group {
   const group = new THREE.Group();
@@ -155,17 +157,6 @@ function buildDig(): THREE.Group {
   patch.rotation.x = -Math.PI / 2;
   patch.castShadow = false;
   group.add(patch);
-  for (const [x, z, r] of [
-    [-1.6, -1.2, 0.9],
-    [1.2, -1.8, 0.7],
-    [0.2, 0.6, 1],
-    [-2, 1.6, 0.6],
-    [1.9, 1.2, 0.8],
-  ] as const) {
-    group.add(
-      mesh(new THREE.SphereGeometry(r, 10, 6, 0, 2 * Math.PI, 0, Math.PI / 2).scale(1, 0.5, 1), 0xe3b968, x, 0, z),
-    );
-  }
   // The hut, off the far side of the sand from the road: plank walls, a pointed roof and a dark doorway.
   const hut = new THREE.Group();
   hut.position.set(-2, 0, -6);
@@ -177,7 +168,7 @@ function buildDig(): THREE.Group {
   group.add(hut);
   // An open crate by the hut, waiting for fossils.
   const crate = new THREE.Group();
-  crate.position.set(2.6, 0, -5);
+  crate.position.set(DIG_CRATE.x, 0, DIG_CRATE.z);
   crate.add(mesh(new THREE.BoxGeometry(1.6, 0.2, 1.2), 0xa0703e, 0, 0.1, 0));
   for (const [x, z, w, d] of [
     [0, 0.55, 1.6, 0.12],

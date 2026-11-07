@@ -794,7 +794,8 @@ export function startGame(canvas: HTMLCanvasElement, mixer: Mixer, hooks: GameHo
 
   /** Starts digging, as the jeep arrives at the dig (docs/design.md §5). */
   function startDigging(): void {
-    const next = bedtime.asleep || inspecting ? null : digCloseUp(fossilUnderSand(fossils), care);
+    // An open card doesn't stop it: opening closes the card, as a care close-up does.
+    const next = bedtime.asleep ? null : digCloseUp(fossilUnderSand(fossils), care);
     if (!next) {
       return;
     }

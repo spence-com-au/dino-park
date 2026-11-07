@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 
+import { CLOSE_UP_GOALS } from '../core/closeUp';
 import type { FossilId } from '../core/fossils';
 import type { Point } from '../core/roads';
 import { scrub } from '../core/wash';
@@ -53,7 +54,8 @@ export function createDigging(
 } {
   const centre = new THREE.Vector3(dig.x, 0, dig.z);
   const sandMaterial = new THREE.MeshStandardMaterial({ color: 0xe3b968, flatShading: true, roughness: 1 });
-  const mounds = MOUNDS.map(([x, z, r]) => {
+  // As many as the close-up's goal, so the fossil rises just as Rosie names it.
+  const mounds = MOUNDS.slice(0, CLOSE_UP_GOALS.dig).map(([x, z, r]) => {
     const mesh = new THREE.Mesh(new THREE.SphereGeometry(r, 10, 6, 0, 2 * Math.PI, 0, Math.PI / 2), sandMaterial);
     mesh.scale.set(1, 0.5, 1);
     mesh.position.set(centre.x + x, 0, centre.z + z);

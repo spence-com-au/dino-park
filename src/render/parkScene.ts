@@ -140,6 +140,62 @@ function buildNest(): THREE.Group {
   return group;
 }
 
+/** How tall the dig's hut is, so its sign can float just above the sand beside it. */
+export const DIG_TOP = 3.2;
+
+/**
+ * The fossil dig (docs/design.md §5): a round patch of sand with mounds to brush away, a little digger hut behind it
+ * and a crate for what's found, at the end of its road (which comes in from the east).
+ */
+function buildDig(): THREE.Group {
+  const group = new THREE.Group();
+  group.name = 'dig';
+  const sand = 0xf0cf8a;
+  const patch = mesh(new THREE.CircleGeometry(4.5, 24), sand, 0, 0.03, 0);
+  patch.rotation.x = -Math.PI / 2;
+  patch.castShadow = false;
+  group.add(patch);
+  for (const [x, z, r] of [
+    [-1.6, -1.2, 0.9],
+    [1.2, -1.8, 0.7],
+    [0.2, 0.6, 1],
+    [-2, 1.6, 0.6],
+    [1.9, 1.2, 0.8],
+  ] as const) {
+    group.add(
+      mesh(new THREE.SphereGeometry(r, 10, 6, 0, 2 * Math.PI, 0, Math.PI / 2).scale(1, 0.5, 1), 0xe3b968, x, 0, z),
+    );
+  }
+  // The hut, off the far side of the sand from the road: plank walls, a pointed roof and a dark doorway.
+  const hut = new THREE.Group();
+  hut.position.set(-2, 0, -6);
+  hut.add(
+    mesh(new THREE.BoxGeometry(3.4, 2.2, 2.6), 0xb98a52, 0, 1.1, 0),
+    mesh(new THREE.ConeGeometry(2.6, 1.2, 4).rotateY(Math.PI / 4), 0x6b8e4e, 0, DIG_TOP - 0.6, 0),
+    mesh(new THREE.BoxGeometry(0.9, 1.5, 0.05), 0x5a3b22, 0.6, 0.75, 1.31),
+  );
+  group.add(hut);
+  // An open crate by the hut, waiting for fossils.
+  const crate = new THREE.Group();
+  crate.position.set(2.6, 0, -5);
+  crate.add(mesh(new THREE.BoxGeometry(1.6, 0.2, 1.2), 0xa0703e, 0, 0.1, 0));
+  for (const [x, z, w, d] of [
+    [0, 0.55, 1.6, 0.12],
+    [0, -0.55, 1.6, 0.12],
+    [0.75, 0, 0.12, 1.2],
+    [-0.75, 0, 0.12, 1.2],
+  ] as const) {
+    crate.add(mesh(new THREE.BoxGeometry(w, 0.8, d), 0xa0703e, x, 0.4, z));
+  }
+  group.add(crate);
+  // A spade and a brush stuck in the sand.
+  group.add(
+    mesh(new THREE.CylinderGeometry(0.07, 0.07, 1.6), 0x8a5a32, 3.2, 0.8, 2.4),
+    mesh(new THREE.BoxGeometry(0.5, 0.6, 0.06), 0x9aa3ad, 3.2, 0.2, 2.4),
+  );
+  return group;
+}
+
 /** How tall each station's model is, so its sign can float just above it. */
 export const STATION_TOPS: Readonly<Record<StationKind, number>> = {
   hay: 2,
@@ -208,7 +264,7 @@ function buildStation(kind: StationKind): THREE.Group {
   return group;
 }
 
-/** Builds the static park: ground, roads, pens and stations. */
+/** Builds the static park: ground, roads, pens, stations, the nest and the dig. */
 export function buildPark(park: Park): THREE.Group {
   const group = new THREE.Group();
   group.name = 'park';
@@ -229,6 +285,9 @@ export function buildPark(park: Park): THREE.Group {
   const nest = buildNest();
   nest.position.set(park.nest.x, 0, park.nest.z);
   group.add(nest);
+  const dig = buildDig();
+  dig.position.set(park.dig.x, 0, park.dig.z);
+  group.add(dig);
   for (const station of park.stations) {
     const model = buildStation(station.kind);
     model.position.set(station.position.x, 0, station.position.z);

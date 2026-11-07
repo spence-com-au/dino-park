@@ -13,8 +13,8 @@ import { strings } from './strings';
 const REFRESH_MS = 500;
 
 /**
- * An info card (docs/design.md §6), opened by a double tap on a dinosaur, a station, the egg nest or Rosie in the
- * jeep. Everything a child needs is a picture, and Rosie reads it aloud; the few words are captions for grown-ups
+ * An info card (docs/design.md §6), opened by a double tap on a dinosaur, a station, the egg nest, the fossil dig or
+ * Rosie in the jeep. Everything a child needs is a picture, and Rosie reads it aloud; the few words are captions for grown-ups
  * and early readers. Give it a `key` of the subject, so another card starts afresh.
  */
 export function InfoCard({ game, subject, onClose }: { game: GameHandle; subject: Subject; onClose(): void }) {
@@ -42,6 +42,25 @@ export function InfoCard({ game, subject, onClose }: { game: GameHandle; subject
   }
   if ('nest' in subject) {
     return <NestCard game={game} onClose={onClose} />;
+  }
+  if ('dig' in subject) {
+    return (
+      <Card title={strings.dig} onClose={onClose}>
+        <header className="card-header">
+          <img className="card-picture" src={iconImage('bone')} alt="" />
+          <div>
+            <h2 className="card-name">{strings.dig}</h2>
+            <p className="card-mood">{strings.digFor}</p>
+          </div>
+        </header>
+        {/* A fossil to find, and the happy face finding it brings. */}
+        <p className="card-answers">
+          <img src={iconImage('bone')} alt="" />
+          <span aria-hidden="true">→</span>
+          <MoodFace mood="happy" />
+        </p>
+      </Card>
+    );
   }
   return <RosieCard game={game} onClose={onClose} />;
 }

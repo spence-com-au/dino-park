@@ -1022,6 +1022,33 @@ test('a double tap opens a card about a station, the egg nest or Rosie', async (
   await expect(rosie.getByText(/sun and the rain/)).toBeVisible();
 });
 
+test('drives down its own road to the fossil dig, which has a card of its own', async ({ page }) => {
+  test.slow();
+  const { canvas, at } = await openPlayedPark(page);
+  const arrive = async () => {
+    await playFor(page, 300);
+    await playFor(page, 20_000, async () => (await canvas.getAttribute('data-moving')) === 'false');
+  };
+  // From the water tower, up and to the left, the dig's road goes on west, open from the start.
+  await canvas.click({ position: at(0.065, 0.15) });
+  await arrive();
+  await expect(canvas).toHaveAttribute('data-visiting', 'station.water');
+  await playFor(page, 3000);
+  // Its bone floats high over the middle of the sand, which from here puts it just left of the hut: a tap on it goes there.
+  await canvas.click({ position: at(0.025, 0.37) });
+  await arrive();
+  await expect(canvas).toHaveAttribute('data-visiting', 'dig');
+
+  // Parked at the sand, which is in the middle of the screen now, a double tap opens its card.
+  const dig = page.getByRole('region', { name: strings.cardTitle(strings.dig) });
+  await doubleTap(page, canvas, at(0.33, 0.5));
+  await expect(dig).toBeVisible();
+  await expect(canvas).toHaveAttribute('data-inspecting', 'dig');
+  await expect(canvas).toHaveAttribute('data-rosie', 'rosie.about.dig');
+  await expect(dig.getByText(strings.digFor)).toBeVisible();
+  await closeCard(page, dig);
+});
+
 test("Rosie's picture wiggles when the player is stuck, and shows them what to do", async ({ page }) => {
   test.slow();
   await page.clock.install();

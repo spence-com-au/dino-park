@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { subjectAt, subjectPoint } from './inspect';
+import { subjectAt, subjectKey, subjectPoint } from './inspect';
 import { PARK } from './park';
 
 const pen = (species: string) => {
@@ -42,5 +42,13 @@ describe('what a double tap opens', () => {
     expect(subjectPoint(PARK, { rosie: true }, jeep)).toEqual(jeep);
     expect(subjectPoint(PARK, { station: 'toys' }, jeep)).toEqual(shed);
     expect(subjectPoint(PARK, { dinosaur: 'trex' }, jeep)).toEqual(pen('trex').position);
+  });
+
+  it('opens the fossil dig anywhere on its sand', () => {
+    expect(subjectAt(PARK, PARK.dig, 0, jeep)).toEqual({ dig: true });
+    expect(subjectAt(PARK, { x: PARK.dig.x - 4, z: PARK.dig.z + 2 }, 0, jeep)).toEqual({ dig: true });
+    expect(subjectAt(PARK, { x: PARK.dig.x, z: PARK.dig.z + 8 }, 0, jeep)).toBeNull();
+    expect(subjectPoint(PARK, { dig: true }, jeep)).toEqual(PARK.dig);
+    expect(subjectKey({ dig: true })).toBe('dig');
   });
 });

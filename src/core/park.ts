@@ -34,6 +34,8 @@ export interface Park {
   readonly stations: readonly Station[];
   /** Where eggs wait to hatch, by the visitor centre. */
   readonly nest: Point;
+  /** The middle of the fossil dig's sand patch (docs/design.md §5), at the end of its own road. */
+  readonly dig: Point;
   /** Where the jeep starts, on a road. */
   readonly start: Point;
 }
@@ -68,6 +70,7 @@ export const PARK: Park = {
       ['w', { x: -36, z: 0 }],
       ['centre', { x: 0, z: 0 }],
       ['raptors', { x: 56, z: 0 }],
+      ['dig', { x: -50, z: 0 }],
     ]),
     edges: [
       ['nw', 'nnw'],
@@ -84,6 +87,8 @@ export const PARK: Park = {
       ['w', 'nw'],
       ['n', 'centre'],
       ['centre', 's'],
+      // West past the water tower to the fossil dig, open from the start.
+      ['w', 'dig'],
     ],
   },
   pens: [
@@ -105,6 +110,8 @@ export const PARK: Park = {
   ],
   // Beside the junction at the middle of the park, which is the nest's road stop.
   nest: { x: 6, z: 0 },
+  // The middle of the sand, 6 m past the end of its road: within reach, so stopping at the road's end visits the dig.
+  dig: { x: -56, z: 0 },
   start: { x: 0, z: 24 },
 };
 

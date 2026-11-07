@@ -33,6 +33,8 @@ export const strings = {
     vet: 'Care for poorly dinosaurs',
   },
   nest: 'Egg nest',
+  dig: 'Fossil dig',
+  digFor: 'Brush the sand away to find a fossil',
   eggProgress: (helped: number, needed: number) => `${helped} of ${needed} dinosaurs helped`,
   eggReady: 'Ready to hatch!',
 

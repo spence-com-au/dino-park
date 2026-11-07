@@ -22,12 +22,14 @@ import { CRUISE_SPEED, type Jeep, angleBetween, driveAlong, parkedJeep, pullOver
 import {
   NEEDS_PER_EGG,
   type Resident,
+  type Visit,
   eggProgress,
   eggReady,
   inTutorial,
   isSad,
   startCare,
   stepNeeds,
+  visitedPlace,
 } from '../core/needs';
 import { PAT_SECONDS, PAT_TALK_SECONDS, patAt } from '../core/pat';
 import {
@@ -57,7 +59,7 @@ import { createFetching } from './fetching';
 import { cargoIcon, iconMaterial, needIcon, stationIcon } from './icons';
 import { buildJeep } from './jeepModel';
 import { loadPark, storePark } from '../storage/parkStore';
-import { STATION_TOPS, buildPark } from './parkScene';
+import { DIG_TOP, STATION_TOPS, buildPark } from './parkScene';
 import { startSteering } from './steering';
 
 export interface GameHandle {
@@ -162,7 +164,7 @@ const EGG_FULL_SIZE = 1.5;
 const SHELL_SECONDS = 1.2;
 /** The guided tour's arrow floats this high over what to tap next, bobbing to catch the eye. */
 const ARROW_HEIGHT = 4.5;
-/** Each station's sign floats this far above it, at this size: smaller than a bubble, so it reads as a sign. */
+/** Each station's (and the dig's) sign floats this far above it, at this size: smaller than a bubble, so it reads as a sign. */
 const SIGN_GAP = 1.6;
 const SIGN_SIZE = 2.2;
 /** A tap this close to the arrow on screen, in CSS pixels, is a tap on what it points at. */
@@ -200,12 +202,27 @@ function hatchlingSpot(index: number): Point {
   return { x: PARK.nest.x + HATCHLING_RING * Math.cos(angle), z: PARK.nest.z + HATCHLING_RING * Math.sin(angle) };
 }
 
-/** The spots worth driving to: pen gates, stations and the nest. */
+/** The spots worth driving to: pen gates, stations, the nest and the dig. */
 const DESTINATIONS: Point[] = [
   ...PARK.pens.map(penGate),
   ...PARK.stations.map((station) => station.position),
   PARK.nest,
+  PARK.dig,
 ];
+
+/** A short name for where the parked jeep is visiting, for the canvas's dataset: `station.<kind>`, `pen.<species>`. */
+function visitKey(visit: Visit | undefined): string {
+  if (!visit) {
+    return '';
+  }
+  if ('station' in visit) {
+    return `station.${visit.station.kind}`;
+  }
+  if ('pen' in visit) {
+    return `pen.${visit.pen.species}`;
+  }
+  return 'nest' in visit ? 'nest' : 'dig';
+}
 
 function snapToDestination(point: Point): Point {
   let best = point;
@@ -296,13 +313,21 @@ export function startGame(canvas: HTMLCanvasElement, mixer: Mixer, hooks: GameHo
     scene.add(bubble);
     return bubble;
   });
-  // Over each station, the picture of the bubble it answers, so a child can match the two by eye (docs/design.md §3).
-  const signs = PARK.stations.map((station) => {
-    const sign = new THREE.Sprite(iconMaterial(stationIcon(station.kind)));
+  // Over each station, the picture of the bubble it answers, so a child can match the two by eye (docs/design.md §3),
+  // and a bone over the fossil dig (§5).
+  const signs = [
+    ...PARK.stations.map((station) => ({
+      icon: stationIcon(station.kind),
+      place: station.position,
+      height: STATION_TOPS[station.kind],
+    })),
+    { icon: 'bone' as const, place: PARK.dig, height: DIG_TOP },
+  ].map(({ icon, place, height }) => {
+    const sign = new THREE.Sprite(iconMaterial(icon));
     sign.scale.setScalar(SIGN_SIZE);
-    sign.position.set(station.position.x, STATION_TOPS[station.kind] + SIGN_GAP, station.position.z);
+    sign.position.set(place.x, height + SIGN_GAP, place.z);
     scene.add(sign);
-    return { sign, station };
+    return { sign, place };
   });
   // Floating over the jeep, clear of Rosie and the roll bar, so the child can see what they're carrying.
   const cargo = new THREE.Sprite();
@@ -535,7 +560,7 @@ export function startGame(canvas: HTMLCanvasElement, mixer: Mixer, hooks: GameHo
   }
 
   /**
-   * What the arrow, or a station's sign, stands for when a tap lands on or near it. Both float well above the ground,
+   * What the arrow, or a place's sign, stands for when a tap lands on or near it. Both float well above the ground,
    * so the ground under a tap on them is somewhere else entirely, and a child who taps one means what it shows.
    */
   function floatingTargetAt(clientX: number, clientY: number): Point | null {
@@ -543,7 +568,7 @@ export function startGame(canvas: HTMLCanvasElement, mixer: Mixer, hooks: GameHo
       return pointAt;
     }
     const sign = signs.find(({ sign }) => screenDistance(sign, clientX, clientY) <= ARROW_TAP_PX);
-    return sign?.station.position ?? null;
+    return sign?.place ?? null;
   }
 
   function groundPointAt(clientX: number, clientY: number): Point | null {
@@ -698,7 +723,7 @@ export function startGame(canvas: HTMLCanvasElement, mixer: Mixer, hooks: GameHo
         now - lastTap.at <= DOUBLE_TAP_MS &&
         Math.hypot(event.clientX - lastTap.x, event.clientY - lastTap.y) <= DOUBLE_TAP_PX;
       lastTap = double ? null : { x: event.clientX, y: event.clientY, at: now };
-      // A double tap on a sign opens its station's card, as one on the station would.
+      // A double tap on a sign opens its place's card, as one on the place would.
       if (double && target) {
         inspect(target, event.clientX, event.clientY);
       }
@@ -1079,7 +1104,7 @@ export function startGame(canvas: HTMLCanvasElement, mixer: Mixer, hooks: GameHo
     arrow.visible = pointAt !== undefined;
     if (pointAt) {
       // Over a station, the arrow rises above its sign.
-      const signed = signs.find(({ station }) => station.position === pointAt);
+      const signed = signs.find(({ place }) => place === pointAt);
       const height = signed ? Math.max(ARROW_HEIGHT, signed.sign.position.y + SIGN_SIZE) : ARROW_HEIGHT;
       arrow.position.set(pointAt.x, height + Math.sin(timer.getElapsed() * 4) * 0.4, pointAt.z);
       arrow.rotation.y += delta * 2;
@@ -1150,6 +1175,7 @@ export function startGame(canvas: HTMLCanvasElement, mixer: Mixer, hooks: GameHo
       wheel.rotation.x += (jeep.speed * delta) / 0.55;
     }
     canvas.dataset.moving = String(jeep.route.length > 0);
+    canvas.dataset.visiting = jeep.route.length > 0 ? '' : visitKey(visitedPlace(PARK, jeep.position));
     updateTrail();
     updateCare(delta);
     canvas.dataset.speaking = String(rosieVoice.speaking);

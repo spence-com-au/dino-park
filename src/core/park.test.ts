@@ -56,11 +56,12 @@ describe('PARK', () => {
     }
   });
 
-  it('visits each station, pen and the nest from its road stop, even stopping a little short or long of it', () => {
+  it('visits each station, pen, the nest and the dig from its road stop, even stopping a little short or long of it', () => {
     const places = [
       ...PARK.stations.map((station) => ({ place: station.position, visit: { station } })),
       ...PARK.pens.map((pen) => ({ place: penGate(pen), visit: { pen } })),
       { place: PARK.nest, visit: { nest: true } },
+      { place: PARK.dig, visit: { dig: true } },
     ];
     for (const { place, visit } of places) {
       for (const stop of stopsNear(place)) {
@@ -88,6 +89,13 @@ describe('PARK', () => {
       const goal = nearestRoadPosition(ALL_OPEN, target);
       expect(findRoute(ALL_OPEN, start, goal).at(-1)).toEqual(goal.point);
     }
+  });
+
+  it('opens the road to the fossil dig from the start, before any egg hatches', () => {
+    const start = nearestRoadPosition(openRoads(PARK, 0), PARK.start);
+    const goal = nearestRoadPosition(openRoads(PARK, 0), PARK.dig);
+    expect(goal.distance).toBeLessThan(MAX_REACH);
+    expect(findRoute(openRoads(PARK, 0), start, goal).at(-1)).toEqual(goal.point);
   });
 
   it('keeps each area closed, with its pen out of reach, until its species hatches', () => {

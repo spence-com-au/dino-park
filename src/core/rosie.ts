@@ -167,6 +167,7 @@ export function rosieLines(): ReadonlyMap<LineId, string> {
     'rosie.about.nest',
     "This is the nest. Every dinosaur you help makes the egg grow. Who's inside? It's a surprise!",
   );
+  lines.set('rosie.about.dig', "This is the dig site. Let's dig for fossils!");
   lines.set('rosie.about.rosie', `That's me, Ranger Rosie! I'm ${ROSIE_FACTS.spoken}.`);
   ROSIE_FACTS.facts.forEach((fact, i) => lines.set(`rosie.fact.rosie.${i}`, fact));
   // Help, when the child taps her picture (docs/design.md §6).
@@ -206,7 +207,7 @@ export function rosieAbout(resident: Resident, fact: number): readonly Beat[] {
 
 /**
  * What Rosie says when a card about `subject` opens, given the park: a dinosaur's as above, a station's purpose, the
- * egg's progress, or her own introduction and fact number `fact`.
+ * egg's progress, the dig site, or her own introduction and fact number `fact`.
  */
 export function rosieOnCard(subject: Subject, care: Care, fact: number): readonly Beat[] {
   if ('dinosaur' in subject) {
@@ -218,6 +219,9 @@ export function rosieOnCard(subject: Subject, care: Care, fact: number): readonl
   }
   if ('nest' in subject) {
     return [{ line: eggReady(care) ? 'rosie.egg.ready' : 'rosie.about.nest' }];
+  }
+  if ('dig' in subject) {
+    return [{ line: 'rosie.about.dig' }];
   }
   const facts = ROSIE_FACTS.facts.length;
   return [{ line: 'rosie.about.rosie' }, { line: `rosie.fact.rosie.${((fact % facts) + facts) % facts}` }];

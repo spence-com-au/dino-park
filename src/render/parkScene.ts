@@ -144,8 +144,8 @@ function buildNest(): THREE.Group {
 export const DIG_TOP = 3.2;
 
 /**
- * The fossil dig (docs/design.md §5): a round patch of sand with mounds to brush away, a little digger hut behind it
- * and a crate for what's found, at the end of its road (which comes in from the east).
+ * The fossil dig (docs/design.md §5): a round patch of sand, a little digger hut behind it and a crate for what's
+ * found, at the end of its road (which comes in from the east). The mounds of sand to brush away are `digging`'s.
  */
 function buildDig(): THREE.Group {
   const group = new THREE.Group();
@@ -155,17 +155,6 @@ function buildDig(): THREE.Group {
   patch.rotation.x = -Math.PI / 2;
   patch.castShadow = false;
   group.add(patch);
-  for (const [x, z, r] of [
-    [-1.6, -1.2, 0.9],
-    [1.2, -1.8, 0.7],
-    [0.2, 0.6, 1],
-    [-2, 1.6, 0.6],
-    [1.9, 1.2, 0.8],
-  ] as const) {
-    group.add(
-      mesh(new THREE.SphereGeometry(r, 10, 6, 0, 2 * Math.PI, 0, Math.PI / 2).scale(1, 0.5, 1), 0xe3b968, x, 0, z),
-    );
-  }
   // The hut, off the far side of the sand from the road: plank walls, a pointed roof and a dark doorway.
   const hut = new THREE.Group();
   hut.position.set(-2, 0, -6);

@@ -12,6 +12,7 @@ import {
 } from './needs';
 import { type CloseUp, closeUpFinished } from './closeUp';
 import { ROSIE_FACTS, SPECIES_FACTS } from './facts';
+import { FOSSILS } from './fossils';
 import type { Subject } from './inspect';
 import type { StationKind } from './park';
 import { LAUNCH_SPECIES, SPECIES, type SpeciesId, UNLOCK_ORDER } from './species';
@@ -168,6 +169,11 @@ export function rosieLines(): ReadonlyMap<LineId, string> {
     "This is the nest. Every dinosaur you help makes the egg grow. Who's inside? It's a surprise!",
   );
   lines.set('rosie.about.dig', "This is the dig site. Let's dig for fossils!");
+  // Digging, once the jeep stops there, and each fossil found (docs/design.md §5).
+  lines.set('rosie.dig', "Let's dig for fossils! Brush the sand away!");
+  for (const [id, fossil] of Object.entries(FOSSILS)) {
+    lines.set(`rosie.fossil.${id}`, `Wow! It's ${fossil.spoken}! ${fossil.fact}`);
+  }
   lines.set('rosie.about.rosie', `That's me, Ranger Rosie! I'm ${ROSIE_FACTS.spoken}.`);
   ROSIE_FACTS.facts.forEach((fact, i) => lines.set(`rosie.fact.rosie.${i}`, fact));
   // Help, when the child taps her picture (docs/design.md §6).
@@ -229,6 +235,9 @@ export function rosieOnCard(subject: Subject, care: Care, fact: number): readonl
 
 /** What Rosie says as a close-up starts, to say what to do, and once it's finished. */
 export function rosieOnCloseUp(closeUp: CloseUp): LineId {
+  if (closeUp.kind === 'dig') {
+    return closeUpFinished(closeUp) ? `rosie.fossil.${closeUp.fossil}` : 'rosie.dig';
+  }
   const { kind, species, item } = closeUp;
   if (kind === 'wash') {
     return closeUpFinished(closeUp) ? `rosie.washed.${species}` : `rosie.wash.${species}`;

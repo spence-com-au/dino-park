@@ -150,6 +150,12 @@ describe('Ranger Rosie', () => {
     const checking = { kind: 'checkup', species: 'trex', item: 'vet', done: 0, idle: 0 } as const;
     expect(rosieOnCloseUp(checking)).toBe('rosie.checkup.trex');
     expect(rosieOnCloseUp({ ...checking, done: 3 })).toBe('rosie.checkedup.trex');
+    const digging = { kind: 'dig', fossil: 'trex-tooth', done: 0, idle: 0 } as const;
+    expect(rosieOnCloseUp(digging)).toBe('rosie.dig');
+    expect(rosieOnCloseUp({ ...digging, done: 5 })).toBe('rosie.fossil.trex-tooth');
+    expect(lines.get('rosie.fossil.trex-tooth')).toBe(
+      "Wow! It's a T. rex tooth! T. rex had big, sharp teeth, as long as a banana!",
+    );
     // Every species has a line for every food it eats, and for water.
     for (const species of [...LAUNCH_SPECIES, ...UNLOCK_ORDER]) {
       for (const kind of ['hungry', 'thirsty'] as const) {

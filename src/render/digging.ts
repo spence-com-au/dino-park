@@ -6,6 +6,7 @@ import { scrub } from '../core/wash';
 import { type CloseUpView, canvasPoint, formatMark, pointerAt, screenGap } from './closeUpView';
 import { buildFossil } from './fossilModels';
 import { iconMaterial } from './icons';
+import { DIG_CRATE } from './parkScene';
 
 /** The mounds of sand over the fossil, from the middle of the dig: where, and how big. */
 const MOUNDS = [
@@ -18,8 +19,8 @@ const MOUNDS = [
 /** How close on screen, in CSS pixels, a finger must be to brush a mound. */
 const BRUSH_PX = 90;
 const BRUSH_SIZE = 1.4;
-/** Where the crate for what's found stands, from the middle of the dig, as `buildDig` puts it. */
-const CRATE = new THREE.Vector3(2.6, 0.8, -5);
+/** A found fossil flies to just over the crate's rim. */
+const CRATE = new THREE.Vector3(DIG_CRATE.x, 0.8, DIG_CRATE.z);
 /** A fossil lies half-buried, rises up out of the sand once found, and turns there while Rosie names it. */
 const BURIED_Y = -0.2;
 const RISEN_Y = 1.6;

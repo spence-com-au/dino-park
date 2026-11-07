@@ -4,7 +4,7 @@ import { CLOSE_UP_GOALS } from '../core/closeUp';
 import type { FossilId } from '../core/fossils';
 import type { Point } from '../core/roads';
 import { scrub } from '../core/wash';
-import { type CloseUpView, canvasPoint, formatMark, pointerAt, screenGap } from './closeUpView';
+import { type CloseUpView, canvasPoint, createRubbing, formatMark, nearestWithin, pointerAt } from './closeUpView';
 import { buildFossil } from './fossilModels';
 import { iconMaterial } from './icons';
 import { DIG_CRATE } from './parkScene';
@@ -87,9 +87,8 @@ export function createDigging(
   let timer = 0;
   /** Mounds brushed away since the last update. */
   let brushed = 0;
-  let pressing = false;
+  const rubbing = createRubbing();
   let brushShown = 0;
-  let last: { x: number; y: number } | null = null;
   const sparkles: { sprite: THREE.Sprite; angle: number }[] = [];
 
   function show(id: FossilId): void {
@@ -122,16 +121,15 @@ export function createDigging(
 
   /** The mound nearest a finger at `clientX`, `clientY` with sand left on it, if it's close enough to brush. */
   function moundAt(clientX: number, clientY: number): (typeof mounds)[number] | undefined {
-    let nearest: (typeof mounds)[number] | undefined;
-    let nearestGap = BRUSH_PX;
-    for (const mound of mounds) {
-      const gap = screenGap(canvas, camera, mound.top, clientX, clientY);
-      if (mound.sand > 0 && gap <= nearestGap) {
-        nearest = mound;
-        nearestGap = gap;
-      }
-    }
-    return nearest;
+    return nearestWithin(
+      canvas,
+      camera,
+      mounds,
+      (mound) => (mound.sand > 0 ? mound.top : null),
+      clientX,
+      clientY,
+      BRUSH_PX,
+    );
   }
 
   function brushAt(clientX: number, clientY: number, rubbedPx: number, tapped: boolean): void {
@@ -174,8 +172,7 @@ export function createDigging(
       // Back in the park, the sand is as it was, ready for next time. A fossil mid-find is dropped: it already counts as
       // found, and Rosie still names it.
       state = 'idle';
-      pressing = false;
-      last = null;
+      rubbing.end();
       brush.visible = false;
       clearSparkles();
       fillSand();
@@ -189,16 +186,14 @@ export function createDigging(
       if (state === 'idle') {
         return false;
       }
-      pressing = true;
-      last = { x: clientX, y: clientY };
+      rubbing.press(clientX, clientY);
       return true;
     },
     drag(clientX, clientY) {
-      if (!pressing || !last) {
+      const moved = rubbing.move(clientX, clientY);
+      if (moved === null) {
         return;
       }
-      const moved = Math.hypot(clientX - last.x, clientY - last.y);
-      last = { x: clientX, y: clientY };
       const near = state === 'digging' ? moundAt(clientX, clientY) : undefined;
       if (near) {
         pointerAt(canvas, camera, near.top, clientX, clientY, brush.position);
@@ -209,8 +204,7 @@ export function createDigging(
       brushAt(clientX, clientY, moved, false);
     },
     cancel() {
-      pressing = false;
-      last = null;
+      rubbing.end();
       brush.visible = false;
     },
     release(clientX, clientY, tapped) {
@@ -225,8 +219,7 @@ export function createDigging(
       } else {
         brush.visible = false;
       }
-      pressing = false;
-      last = null;
+      rubbing.end();
     },
     update(delta) {
       if (state !== 'digging' && state !== 'idle') {

@@ -115,3 +115,56 @@ export function pointerAt(
   const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(camera.getWorldDirection(new THREE.Vector3()), through);
   return raycaster.ray.intersectPlane(plane, target);
 }
+
+/**
+ * Of `targets`, the one whose place on screen is nearest a pointer at `clientX`, `clientY`, within `radiusPx` CSS
+ * pixels. `at` gives each target's place in the world, or null for one that can't be touched now.
+ */
+export function nearestWithin<T>(
+  canvas: HTMLCanvasElement,
+  camera: THREE.Camera,
+  targets: readonly T[],
+  at: (target: T) => THREE.Vector3 | null,
+  clientX: number,
+  clientY: number,
+  radiusPx: number,
+): T | undefined {
+  let nearest: T | undefined;
+  let nearestGap = radiusPx;
+  for (const target of targets) {
+    const place = at(target);
+    const gap = place ? screenGap(canvas, camera, place, clientX, clientY) : Infinity;
+    if (gap <= nearestGap) {
+      nearest = target;
+      nearestGap = gap;
+    }
+  }
+  return nearest;
+}
+
+/** Follows one rubbing press, for a close-up whose tool is rubbed back and forth over something (washing, digging). */
+export function createRubbing(): {
+  press(clientX: number, clientY: number): void;
+  /** How far, in CSS pixels, the press moved since last time, or null when nothing is pressed. */
+  move(clientX: number, clientY: number): number | null;
+  /** The press lets go, or the browser takes it over. */
+  end(): void;
+} {
+  let last: { x: number; y: number } | null = null;
+  return {
+    press(clientX, clientY) {
+      last = { x: clientX, y: clientY };
+    },
+    move(clientX, clientY) {
+      if (!last) {
+        return null;
+      }
+      const moved = Math.hypot(clientX - last.x, clientY - last.y);
+      last = { x: clientX, y: clientY };
+      return moved;
+    },
+    end() {
+      last = null;
+    },
+  };
+}

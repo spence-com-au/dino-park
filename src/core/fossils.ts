@@ -14,7 +14,7 @@ export type FossilId =
   | 'megalodon-tooth';
 
 export interface Fossil {
-  /** What Rosie calls it, after "It's": with "a". */
+  /** What Rosie calls it, after "It's": with "a" or "an". */
   readonly spoken: string;
   /** One thing about it, said straight after its name. */
   readonly fact: string;

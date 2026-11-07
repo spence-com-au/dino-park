@@ -44,7 +44,7 @@ import {
   stepCloseUp,
   touchCloseUp,
 } from '../core/closeUp';
-import { type FossilId, drawFossil, shuffleFossils } from '../core/fossils';
+import { type FossilId, drawFossil, returnFossil, shuffleFossils } from '../core/fossils';
 import { type Subject, subjectAt, subjectKey, subjectPoint } from '../core/inspect';
 import { type Beat, type Focus, type LineId, rosieOnCard, rosieOnCloseUp, rosieSays, welcomeLine } from '../core/rosie';
 import { resumeCare, savePark } from '../core/save';
@@ -801,7 +801,7 @@ export function startGame(canvas: HTMLCanvasElement, mixer: Mixer, hooks: GameHo
 
   /** Starts digging, as the jeep arrives at the dig (docs/design.md §5). */
   function startDigging(): void {
-    // Not asleep, nor reading a card, nor in the tour; checked before drawing, so no fossil is used up unseen.
+    // Not asleep, nor reading a card, nor in the tour: checked before drawing, so no fossil is drawn for nothing.
     const next = bedtime.asleep || inspecting || inTutorial(care) ? null : digCloseUp(nextFossil(), care);
     if (!next) {
       return;
@@ -830,6 +830,11 @@ export function startGame(canvas: HTMLCanvasElement, mixer: Mixer, hooks: GameHo
       return;
     }
     closeUpViews[closeUp.kind].stop();
+    // A patch left before its fossil was found keeps that fossil for next time. (Once one is found, `closeUp.fossil`
+    // is already the next patch's.)
+    if (closeUp.kind === 'dig') {
+      fossils = returnFossil(fossils, closeUp.fossil);
+    }
     closeUp = null;
     press = null;
     hooks.onCloseUp(null);

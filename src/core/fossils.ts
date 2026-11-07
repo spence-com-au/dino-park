@@ -62,3 +62,11 @@ export function drawFossil(
   const [fossil = FOSSIL_IDS[0] as FossilId, ...rest] = next;
   return { fossil, deck: rest };
 }
+
+/**
+ * `deck` with `fossil` back on top, for a patch of sand left before its fossil was found: it's the next one dug up,
+ * so leaving early never uses a fossil up unseen.
+ */
+export function returnFossil(deck: readonly FossilId[], fossil: FossilId): FossilId[] {
+  return [fossil, ...deck];
+}

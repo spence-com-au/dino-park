@@ -170,9 +170,6 @@ export function createDigging(
     queue(id) {
       queued = id;
     },
-    start() {
-      // The dig starts with `begin`, which knows the fossil.
-    },
     stop() {
       // Back in the park, the sand is as it was, ready for next time. A fossil mid-find is dropped: it already counts as
       // found, and Rosie still names it.

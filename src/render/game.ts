@@ -55,7 +55,7 @@ import { nextHint } from '../core/help';
 import { holdUntilDriven, tourStep } from '../core/tour';
 import { type DinoInstance, type DinoSkin, loadDinoSkin } from './dinoSkin';
 import { buildRosie } from './rosieModel';
-import type { CloseUpView } from './closeUpView';
+import type { CareCloseUpView, CloseUpView } from './closeUpView';
 import { createFeeding } from './feeding';
 import { createWashing } from './washing';
 import { createCheckup } from './checkup';
@@ -365,13 +365,13 @@ export function startGame(canvas: HTMLCanvasElement, mixer: Mixer, hooks: GameHo
   /** The close-up the camera is in, if any, and the food waiting in it. */
   let closeUp: CloseUp | null = null;
   const digView = createDigging(scene, camera, canvas, PARK.dig);
-  const closeUpViews: Readonly<Record<CloseUp['kind'], CloseUpView>> = {
+  const careViews: Readonly<Record<CareCloseUp['kind'], CareCloseUpView>> = {
     feed: createFeeding(scene, camera, canvas),
     wash: createWashing(scene, camera, canvas),
     fetch: createFetching(scene, camera, canvas),
     checkup: createCheckup(scene, camera, canvas),
-    dig: digView,
   };
+  const closeUpViews: Readonly<Record<CloseUp['kind'], CloseUpView>> = { ...careViews, dig: digView };
   /** The fossils still to find, the one under the sand first, shuffled afresh each time the game opens (§5). */
   let fossils = shuffleFossils(Math.random);
   /** Whether the jeep was parked at the dig last frame, so only arriving there opens it, not staying. */
@@ -786,7 +786,7 @@ export function startGame(canvas: HTMLCanvasElement, mixer: Mixer, hooks: GameHo
       return false;
     }
     openCloseUp();
-    closeUpViews[next.kind].start(herd, next.item, pen);
+    careViews[next.kind].start(herd, next.item, pen);
     closeUp = next;
     hooks.onCloseUp(next);
     return true;

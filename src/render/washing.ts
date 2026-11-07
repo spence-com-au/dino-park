@@ -2,7 +2,15 @@ import * as THREE from 'three';
 
 import { CLOSE_UP_GOALS } from '../core/closeUp';
 import { scrub } from '../core/wash';
-import { type CloseUpView, canvasPoint, formatMark, modelPoints, pointerAt, screenGap, sideOf } from './closeUpView';
+import {
+  type CareCloseUpView,
+  canvasPoint,
+  formatMark,
+  modelPoints,
+  pointerAt,
+  screenGap,
+  sideOf,
+} from './closeUpView';
 import { iconMaterial } from './icons';
 
 /** How big a splat of mud is, and how close on screen, in CSS pixels, a finger must be to rub it. */
@@ -22,7 +30,7 @@ const BUBBLE_EVERY_PX = 60;
  * Washing a dinosaur (docs/design.md §3): splats of mud along its side, each rubbed off (or tapped twice) with a
  * sponge that follows the finger, in a froth of bubbles.
  */
-export function createWashing(scene: THREE.Scene, camera: THREE.Camera, canvas: HTMLCanvasElement): CloseUpView {
+export function createWashing(scene: THREE.Scene, camera: THREE.Camera, canvas: HTMLCanvasElement): CareCloseUpView {
   const splats: { sprite: THREE.Sprite; mud: number }[] = [];
   const bubbles: { sprite: THREE.Sprite; age: number }[] = [];
   const mudMaterial = iconMaterial('mud', { bare: true }).clone();

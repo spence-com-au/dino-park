@@ -3,10 +3,8 @@ import * as THREE from 'three';
 import type { Pen, StationKind } from '../core/park';
 import type { DinoInstance } from './dinoSkin';
 
-/** What a close-up (docs/design.md §3) shows and does, in the scene, while the camera is in on its dinosaur. */
+/** What a close-up (docs/design.md §3) shows and does, in the scene, while the camera is in on it. */
 export interface CloseUpView {
-  /** Starts it for `herd`, given `item`, in `pen`, at whose gate the jeep waits. */
-  start(herd: readonly DinoInstance[], item: StationKind, pen: Pen): void;
   stop(): void;
   /** A press at `clientX`, `clientY`: whether the close-up takes it. */
   press(clientX: number, clientY: number): boolean;
@@ -19,6 +17,12 @@ export interface CloseUpView {
   update(delta: number): number;
   /** Where its things are on the canvas, in CSS pixels, as "x,y" (several joined by ";"), for the canvas's dataset. */
   marks(): Readonly<Record<string, string>>;
+}
+
+/** A close-up after a delivery, in on the dinosaur just helped. */
+export interface CareCloseUpView extends CloseUpView {
+  /** Starts it for `herd`, given `item`, in `pen`, at whose gate the jeep waits. */
+  start(herd: readonly DinoInstance[], item: StationKind, pen: Pen): void;
 }
 
 const projected = new THREE.Vector3();

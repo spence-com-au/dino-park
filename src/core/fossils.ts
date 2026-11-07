@@ -3,7 +3,15 @@
  * what palaeontologists think today and short enough for a 3–6 year old to follow.
  */
 
-export type FossilId = 'trex-tooth' | 'triceratops-horn' | 'stegosaurus-plate' | 'footprint';
+export type FossilId =
+  | 'trex-tooth'
+  | 'triceratops-horn'
+  | 'stegosaurus-plate'
+  | 'footprint'
+  | 'ammonite'
+  | 'trilobite'
+  | 'archaeopteryx-feather'
+  | 'megalodon-tooth';
 
 export interface Fossil {
   /** What Rosie calls it, after "It's": with "a". */
@@ -28,6 +36,23 @@ export const FOSSILS: Readonly<Record<FossilId, Fossil>> = {
   footprint: {
     spoken: 'a dinosaur footprint',
     fact: 'Lots of dinosaurs walked on three big toes, like birds do today.',
+  },
+  // From beyond the park: animals that lived before, alongside or after the dinosaurs.
+  ammonite: {
+    spoken: 'an ammonite',
+    fact: 'Ammonites lived in the sea when dinosaurs were alive, inside a curly shell like a snail.',
+  },
+  trilobite: {
+    spoken: 'a trilobite',
+    fact: 'Trilobites crawled along the bottom of the sea, long, long before the dinosaurs.',
+  },
+  'archaeopteryx-feather': {
+    spoken: 'an Archaeopteryx feather',
+    fact: 'Archaeopteryx was a little dinosaur with feathers and wings, and teeth too!',
+  },
+  'megalodon-tooth': {
+    spoken: 'a Megalodon tooth',
+    fact: 'Megalodon was a giant shark, and its teeth were bigger than your hand!',
   },
 };
 

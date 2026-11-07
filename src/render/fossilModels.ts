@@ -102,6 +102,98 @@ export function buildFossil(id: FossilId): THREE.Group {
       group.add(heel);
       break;
     }
+    case 'ammonite': {
+      // A coiled shell on stone: a tube winding inwards, thinning as it goes, with ribs across it.
+      group.add(slab(1.3));
+      const turns = 2.5;
+      const points: THREE.Vector3[] = [];
+      for (let i = 0; i <= 60; i++) {
+        const t = i / 60;
+        const angle = t * turns * 2 * Math.PI;
+        const radius = 1 - 0.85 * t;
+        points.push(new THREE.Vector3(radius * Math.cos(angle), 0.45, radius * Math.sin(angle)));
+      }
+      const coil = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), 80, 0.2, 8);
+      // Thinner towards the middle, like the real shell's newest whorl outside and oldest in the centre.
+      const positions = coil.getAttribute('position');
+      const centre = new THREE.Vector3();
+      for (let i = 0; i < positions.count; i++) {
+        const along = Math.floor(i / 9) / 80;
+        const point = new THREE.CatmullRomCurve3(points).getPointAt(Math.min(1, along), centre);
+        const scale = 1 - 0.7 * along;
+        positions.setXYZ(
+          i,
+          point.x + (positions.getX(i) - point.x) * scale,
+          point.y + (positions.getY(i) - point.y) * scale,
+          point.z + (positions.getZ(i) - point.z) * scale,
+        );
+      }
+      coil.computeVertexNormals();
+      group.add(part(coil, 0xc9a46a));
+      break;
+    }
+    case 'trilobite': {
+      // An oval in three lobes, nose to tail: a rounded head shield, a ribbed body and a little tail, on stone.
+      group.add(slab(1.3));
+      const head = part(new THREE.SphereGeometry(1, 14, 8), STONE_DARK);
+      head.scale.set(0.75, 0.2, 0.42);
+      head.position.set(0, 0.3, -0.42);
+      group.add(head);
+      for (let i = 0; i < 6; i++) {
+        const width = 1.25 - i * 0.12;
+        const rib = part(new THREE.CapsuleGeometry(0.09, width, 3, 6).rotateZ(Math.PI / 2), STONE_DARK);
+        rib.scale.y = 0.6;
+        rib.position.set(0, 0.36, -0.15 + i * 0.2);
+        group.add(rib);
+      }
+      // The raised ridge down its middle that gives it its three lobes.
+      const ridge = part(new THREE.CapsuleGeometry(0.14, 1.1, 3, 6).rotateX(Math.PI / 2), 0x5a5048);
+      ridge.scale.x = 1;
+      ridge.position.set(0, 0.42, 0.2);
+      group.add(ridge);
+      break;
+    }
+    case 'archaeopteryx-feather': {
+      // A long feather pressed flat into pale stone: a shaft with a vane either side, narrower on one side.
+      const stone = slab(1.3);
+      (stone.material as THREE.MeshStandardMaterial).color.set(0xd8cdb6);
+      group.add(stone);
+      const shaft = part(new THREE.BoxGeometry(0.06, 0.06, 2), STONE_DARK);
+      shaft.position.set(0, 0.33, 0);
+      shaft.rotation.y = 0.5;
+      group.add(shaft);
+      for (const [side, width] of [
+        [-1, 0.32],
+        [1, 0.2],
+      ] as const) {
+        const vane = part(new THREE.SphereGeometry(1, 12, 6), 0x7d6f5f);
+        vane.scale.set(width, 0.03, 0.9);
+        vane.position.set(side * width * 0.9, 0.32, 0.05);
+        const holder = new THREE.Group();
+        holder.rotation.y = 0.5;
+        holder.add(vane);
+        group.add(holder);
+      }
+      break;
+    }
+    case 'megalodon-tooth': {
+      // A huge, flat, triangular shark's tooth, dark and glossy, with a paler root along its top.
+      const shape = new THREE.Shape();
+      shape.moveTo(-1, 0.6);
+      shape.quadraticCurveTo(0, 0.9, 1, 0.6);
+      shape.quadraticCurveTo(0.55, -0.2, 0, -1.3);
+      shape.quadraticCurveTo(-0.55, -0.2, -1, 0.6);
+      const tooth = part(
+        new THREE.ExtrudeGeometry(shape, { depth: 0.18, bevelEnabled: true, bevelSize: 0.08, bevelThickness: 0.08 }),
+        0x55555e,
+      );
+      tooth.rotation.x = -Math.PI / 2;
+      tooth.position.y = 0.15;
+      const root = part(new THREE.BoxGeometry(1.9, 0.36, 0.35), 0x9a8a72);
+      root.position.set(0, 0.25, -0.68);
+      group.add(tooth, root);
+      break;
+    }
   }
   return group;
 }

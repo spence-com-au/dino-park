@@ -7,6 +7,9 @@ const BONE = 0xeadbb8;
 const BONE_DARK = 0xc9b48a;
 const STONE = 0x9c8f7f;
 const STONE_DARK = 0x6f6458;
+/** How many steps the ammonite's coiled tube takes along its path, and how many sides it has around. */
+const COIL_SEGMENTS = 80;
+const COIL_SIDES = 8;
 
 function part(geometry: THREE.BufferGeometry, color: number): THREE.Mesh {
   const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color, flatShading: true, roughness: 0.8 }));
@@ -103,7 +106,7 @@ export function buildFossil(id: FossilId): THREE.Group {
       break;
     }
     case 'ammonite': {
-      // A coiled shell on stone: a tube winding inwards, thinning as it goes, with ribs across it.
+      // A coiled shell on stone: a tube winding inwards, thinning as it goes.
       group.add(slab(1.3));
       const turns = 2.5;
       const points: THREE.Vector3[] = [];
@@ -113,13 +116,15 @@ export function buildFossil(id: FossilId): THREE.Group {
         const radius = 1 - 0.85 * t;
         points.push(new THREE.Vector3(radius * Math.cos(angle), 0.45, radius * Math.sin(angle)));
       }
-      const coil = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), 80, 0.2, 8);
+      const path = new THREE.CatmullRomCurve3(points);
+      const coil = new THREE.TubeGeometry(path, COIL_SEGMENTS, 0.2, COIL_SIDES);
       // Thinner towards the middle, like the real shell's newest whorl outside and oldest in the centre.
       const positions = coil.getAttribute('position');
       const centre = new THREE.Vector3();
       for (let i = 0; i < positions.count; i++) {
-        const along = Math.floor(i / 9) / 80;
-        const point = new THREE.CatmullRomCurve3(points).getPointAt(Math.min(1, along), centre);
+        // The tube has a ring of `COIL_SIDES + 1` vertices for each of its `COIL_SEGMENTS + 1` steps along the path.
+        const along = Math.floor(i / (COIL_SIDES + 1)) / COIL_SEGMENTS;
+        const point = path.getPointAt(Math.min(1, along), centre);
         const scale = 1 - 0.7 * along;
         positions.setXYZ(
           i,
@@ -133,7 +138,7 @@ export function buildFossil(id: FossilId): THREE.Group {
       break;
     }
     case 'trilobite': {
-      // An oval in three lobes, nose to tail: a rounded head shield, a ribbed body and a little tail, on stone.
+      // An oval in three lobes on stone: a rounded head shield, a ribbed body and a raised ridge down its middle.
       group.add(slab(1.3));
       const head = part(new THREE.SphereGeometry(1, 14, 8), STONE_DARK);
       head.scale.set(0.75, 0.2, 0.42);
@@ -148,7 +153,6 @@ export function buildFossil(id: FossilId): THREE.Group {
       }
       // The raised ridge down its middle that gives it its three lobes.
       const ridge = part(new THREE.CapsuleGeometry(0.14, 1.1, 3, 6).rotateX(Math.PI / 2), 0x5a5048);
-      ridge.scale.x = 1;
       ridge.position.set(0, 0.42, 0.2);
       group.add(ridge);
       break;

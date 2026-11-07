@@ -51,6 +51,8 @@ export function createDigging(
   begin(fossil: FossilId): void;
   /** What the next patch of sand covers, once the fossil just found has gone into the crate. */
   queue(fossil: FossilId): void;
+  /** Frees every fossil model it has built, whether or not one is in the scene, as the game is torn down. */
+  dispose(): void;
 } {
   const centre = new THREE.Vector3(dig.x, 0, dig.z);
   const sandMaterial = new THREE.MeshStandardMaterial({ color: 0xe3b968, flatShading: true, roughness: 1 });
@@ -167,6 +169,17 @@ export function createDigging(
     },
     queue(id) {
       queued = id;
+    },
+    dispose() {
+      for (const model of models.values()) {
+        model.traverse((part) => {
+          if (part instanceof THREE.Mesh) {
+            part.geometry.dispose();
+            (part.material as THREE.Material).dispose();
+          }
+        });
+      }
+      models.clear();
     },
     stop() {
       // Back in the park, the sand is as it was, ready for next time. A fossil mid-find is dropped: it already counts as

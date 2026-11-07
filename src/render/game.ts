@@ -1441,6 +1441,8 @@ export function startGame(canvas: HTMLCanvasElement, mixer: Mixer, hooks: GameHo
       canvas.removeEventListener('pointermove', onPointerMove);
       canvas.removeEventListener('pointerup', onPointerUp);
       canvas.removeEventListener('pointercancel', onPointerCancel);
+      // Fossil models wait off-stage between digs, out of the scene's reach.
+      digView.dispose();
       scene.traverse((object) => {
         if (object instanceof THREE.Mesh) {
           object.geometry.dispose();

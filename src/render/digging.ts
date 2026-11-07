@@ -172,7 +172,8 @@ export function createDigging(
       // The dig starts with `begin`, which knows the fossil.
     },
     stop() {
-      // Back in the park, the sand is as it was, ready for next time; a fossil on its way to the crate gets there.
+      // Back in the park, the sand is as it was, ready for next time. A fossil mid-find is dropped: it already counts as
+      // found, and Rosie still names it.
       state = 'idle';
       pressing = false;
       last = null;
